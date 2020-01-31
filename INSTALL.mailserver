@@ -1,0 +1,235 @@
+/*
+ * $RCSfile: INSTALL,v $ $Revision: 1.25 $
+ * $Author: slim_lv $ $Date: 2016/12/28 17:46:01 $
+ * This file is part of CYRUP project
+ */
+
+HOW-TO QUICKLY BUILD YOUR OWN MAIL BOX USING FREE SOFTWARE
+
+this is common part. For distro specific parts see INSTALL.distro
+
+----- CRONTAB :
+# Remove virus/spam files older than 40*24 hours
+02 1 * * * root /usr/sbin/tmpwatch --nodirs 960 /var/spool/amavis/virusmails/
+
+----- SYSCTL :
+/etc/sysctl.conf:
+# Allowed local port range
+net.ipv4.ip_local_port_range = 32768   61000
+
+----- PAM_MYSQL :
+http://sourceforge.net/projects/pam-mysql/
+    `cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/pam-mysql co -P pam_mysql_ng`
+Configure as ./configure --with-openssl
+for sha1 support /lib/security/pam_mysql.so must be linked against libssl.so
+----- PAM-PGSQL :
+http://sourceforge.net/projects/pam-pgsql/
+
+----- PAM (for MySQL):
+/etc/pam.d/pop|imap|sieve|postfix|smtp:
+#%PAM-1.0
+auth    sufficient /lib/security/pam_mysql.so host=localhost user=postfix passwd=A1L db=mail table=cyrup_accounts usercolumn=account passwdcolumn=password where=enabled=1 crypt=4 sqlLog=0
+account required   /lib/security/pam_mysql.so host=localhost user=postfix passwd=A1L db=mail table=cyrup_accounts usercolumn=account passwdcolumn=password where=enabled=1 crypt=4 sqlLog=0
+
+----- MySQL:
+create file /etc/my.cnf, put these lines:
+[mysqld]
+skip-networking
+max_connections = 300
+
+/etc/httpd/php.ini:
+extension=mysql.so
+
+when mysql is listening on loopback (127.0.0.1), fix postfix-db configs:
+`sed -i 's/localhost/127.0.0.1/' scripts/mysql-virtual-*.cf`
+
+----- CYRUP :
+http://sf.net/projects/cyrup/
+    `cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cyrup co -P cyrup`
+Fix 3 last lines in scripts/cyrup.mysql.sql: insert correct postfix/cyrus/admin passwords
+Import "scripts/cyrup.mysql.sql" or "scripts/cyrup.pgsql.sql" into database
+You may wish to create custom indexes to speed up queries like this:
+"CREATE INDEX account_id_index ON cyrup_aliases(account_id)"
+Edit "config.inc.php"
+open in browser "http://yourhost/where-is-cyrup/install.php"
+Create domains list for postfix/amavisd:
+    `touch /etc/postfix/local.domains /etc/postfix/aliases.pcre`
+    `chown root:httpd /etc/postfix/local.domains /etc/postfix/aliases.pcre`
+    `chmod g+rw /etc/postfix/local.domains /etc/postfix/aliases.pcre`
+
+----- CYRUS :
+/etc/cyrus-imapd/cyrus.conf:
+lmtpunix      cmd="lmtpd" listen="/var/run/lmtp" prefork=0
+/etc/cyrus-imapd/imapd.conf:
+# server conf
+# 550 on quota overrun if run over LMTP
+lmtp_over_quota_perm_failure: 1 
+# next 3 lines are needed if You would like use "USER@DOMAIN.TLD" for "MAILBOX_STYLE"
+unixhierarchysep: 1 # we would like to use '/' as delimiter in cyrus mailboxes
+virtdomains: userid 
+defaultdomain: domain.tld 
+servername: domain.tld
+postmaster: postmaster
+admins: cyrus
+imapidresponse: 0
+allowanonymouslogin: no
+allowplaintext: yes
+sasl_mech_list: plain
+sasl_minimum_layer: 0
+sasl_pwcheck_method: saslauthd
+sasl_sql_select: dummy
+tls_ca_file: /etc/ssl/certs/imap.pem
+tls_cert_file: /etc/ssl/certs/imap.pem
+tls_key_file: /etc/ssl/certs/imap.pem
+
+# NOTE: if user log on as user in defaultdomain then (before user lookup) cyrus-imap
+#  strips this defaultdomain and call sasl with username only (empty realm). 
+#  Looks like there is not possible to provide default realm to saslauhtd
+#  Therefor You should use fake defaultdomain when saslauthd + virtdomains are used
+
+---- POSTFIX
+/etc/sasl2/postfix.conf 
+# use the sasl authentication daemon, for e.g. pam
+pwcheck_method: saslauthd
+mech_list: plain login
+sql_select: dummy
+
+copy scripts/mysql-* from CYRUP to /etc/postfix/
+
+mkdir /var/mail/
+
+/etc/postfix/master.cf:
+smtp      inet  n       -       n       -       -       smtpd
+        -o receive_override_options=no_address_mappings
+localhost:10025  inet    n       -       n       -       -       smtpd 
+	-o smtpd_authorized_xforward_hosts=127.0.0.0/8
+        -o content_filter=
+        -o local_recipient_maps=
+        -o relay_recipient_maps=
+        -o smtpd_client_restrictions=
+        -o smtpd_sender_restrictions=
+        -o smtpd_recipient_restrictions=permit_mynetworks,reject
+        -o mynetworks=127.0.0.0/8
+        -o smtpd_client_connection_count_limit=0
+        -o smtpd_client_connection_rate_limit=0
+	-o receive_override_options=no_header_body_checks,no_unknown_recipient_checks
+
+smtp-amavis unix        -       -       n       -       2       lmtp
+        -o lmtp_data_done_timeout=1200
+        -o disable_dns_lookups=yes
+        -o lmtp_send_xforward_command=yes
+
+/etc/postfix/main.cf:
+myhostname = host.domain.tld
+myorigin = $mydomain
+inet_interfaces = all
+mydestination = $myhostname, localhost
+mynetworks = $config_directory/mynetworks
+mynetworks_style = host
+mail_spool_directory = /var/mail
+smtpd_tls_cert_file = /etc/ssl/certs/smtpd.pem
+smtpd_tls_key_file = $smtpd_tls_cert_file
+smtpd_use_tls = yes
+smtp_tls_cert_file = /etc/ssl/certs/smtpd.pem
+smtp_tls_key_file = $smtp_tls_cert_file
+smtp_use_tls = yes
+message_size_limit = 10000000
+disable_vrfy_command = yes
+smtpd_helo_required = yes
+smtpd_delay_reject = yes
+mail_name = mailer
+smtpd_banner = $myhostname ESMTP $mail_name
+show_user_unknown_table_name = no
+unknown_local_recipient_reject_code = 550
+broken_sasl_auth_clients = yes
+
+smtpd_client_restrictions = permit_sasl_authenticated,
+			    reject_unauth_pipelining,
+                            reject_rbl_client zen.spamhaus.org,
+                            reject_rbl_client bl.spamcop.net,
+
+smtpd_helo_restrictions =   permit_mynetworks,
+                            permit_sasl_authenticated,
+			    reject_invalid_helo_hostname,
+                            reject_non_fqdn_helo_hostname,
+
+smtpd_sender_restrictions =     hash:/etc/postfix/access,
+				reject_non_fqdn_sender,
+				reject_unlisted_sender,
+                                reject_unknown_sender_domain 
+
+smtpd_recipient_restrictions =  reject_non_fqdn_recipient,
+                                permit_mynetworks,
+                                permit_sasl_authenticated,
+                                reject_unauth_destination,
+                                hash:/etc/postfix/access
+
+virtual_transport = lmtp:unix:/var/run/lmtp
+virtual_mailbox_domains = mysql:/etc/postfix/mysql-virtual-domains.cf
+virtual_mailbox_maps = mysql:/etc/postfix/mysql-virtual-aliases.cf
+virtual_alias_maps =    mysql:/etc/postfix/mysql-virtual-aliases.cf, 
+                        mysql:/etc/postfix/mysql-virtual-maillists.cf,
+                        mysql:/etc/postfix/mysql-virtual-default_rcpt.cf,
+                        $alias_maps,
+			pcre:/etc/postfix/aliases.pcre
+
+virtual_alias_recursion_limit = 20
+
+alias_maps = hash:/etc/postfix/aliases
+local_recipient_maps =  unix:passwd.byname, $alias_maps
+smtpd_sasl_auth_enable = yes
+#smtpd_sasl_security_options = noanonymous, noplaintext
+smtpd_sasl_tls_security_options = noanonymous
+smtpd_tls_auth_only = yes
+content_filter=smtp-amavis:[127.0.0.1]:10024
+
+
+/etc/postfix/aliases.pcre:
+# Basic system aliases -- these MUST be present.
+/(MAILER-DAEMON|postmaster|abuse|webmaster)@(.*)$/  admin@domain.tld # where to resend system messages
+
+----- AMAVISD
+/etc/amavisd.conf:
+$myproduct_name = "virus/spam checker";
+$mydomain = 'domain.tld';
+$forward_method = 'smtp:[127.0.0.1]:10025';
+@local_domains_maps = ( read_hash("/etc/postfix/local.domains") );
+$allowed_added_header_fields{lc('Received')} = 0;
+@mynetworks = qw( 127.0.0.0/8 ::1 );
+$log_level = 0; 
+$final_virus_destiny      = D_DISCARD;
+$warnbannedsender = 1;
+$warnbadhsender = 1;
+$virus_admin = 'admin@domain.tld';
+$spam_admin = 'admin@domain.tld';
+$virus_quarantine_to  = 'virus-quarantine';
+$banned_quarantine_to     = 'banned-quarantine';
+$bad_header_quarantine_to = 'bad-header-quarantine';
+$spam_quarantine_to       = 'spam-quarantine';
+$sa_spam_subject_tag = '[SPAM] '; 
+$banned_filename_re =
+ [ qr'^\.(zip|rar|arc|arj|zoo)$'=> 0 ],
+$sa_spam_level_char = '*';
+$sa_tag_level_deflt  = 1.0;
+$sa_tag2_level_deflt = 3.0;
+$sa_kill_level_deflt = 6.31;
+$sa_dsn_cutoff_level = 8.0;
+$first_infected_stops_scan = 1;
+### http://www.kaspersky.com/
+['KasperskyLab AntiViral Toolkit Pro (AVP)', ['/var/spool/amavis/checkavp.pl'],
+    ' {}/', qr/^OK/, qr/^INFECTED: /, qr/^INFECTED: (.+)/,
+],
+
+/etc/spamassassin/local.cf:
+skip_rbl_checks 1
+use_bayes 1
+auto_learn 1
+
+http://www.squirrelmail.org/
+NOTE: if "unixhierarchysep: 1" is set in imapd.conf, Folder names in "Folder Defaults" tabs 
+ should use "/" delimiter
+
+plugin - avelsieve
+NOTE: use "sieve_tls_key_file: disabled"/"sieve_tls_cert_file: disabled" in imapd.conf to disable TLS
+
+For Autoreply support Net_Sieve PEAR class is required. Tested on avelsieve (1.9.9) and roundcube (0.5)

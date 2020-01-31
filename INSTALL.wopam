@@ -1,0 +1,36 @@
+-----HOW-TO run CyrUp with cleartext passwords (CRAM-MD5 is enabled) without pam
+
+cyrup/config.inc.php:
+   define( "PASSWORD_CRYPT", 0 );
+
+/etc/cyrus-imapd/imapd.conf:
+    virtdomains: userid
+    defaultdomain: domain.tld
+    servername: domain.tld
+    sasl_mech_list: PLAIN LOGIN DIGEST-MD5 CRAM-MD5
+    auxprop_plugin: sql
+    sasl_sql_user: postfix
+    sasl_sql_passwd: FIXME
+    sasl_sql_database: mail
+    sasl_sql_hostnames: localhost
+    sasl_sql_statement: SELECT password FROM cyrup_accounts WHERE account = '%u@%r' AND enabled = '1'
+    sasl_sql_usessl: no
+
+/etc/sasl2/postfix.conf:
+pwcheck_method: auxprop
+auxprop_plugin: sql
+mech_list: PLAIN LOGIN DIGEST-MD5 CRAM-MD5
+sql_engine: mysql
+sql_user: postfix
+sql_passwd: FIXME
+sql_hostnames: localhost
+sql_database: mail
+sql_statement: SELECT password FROM cyrup_accounts WHERE account = '%u@%r' AND enabled = '1'
+sql_usessl: no
+
+/etc/postfix/main.cf:
+smtpd_tls_auth_only = no
+
+scripts/cyrup.mysql.sql:
+scripts/cyrup.pgsql.sql:
+INSERT INTO cyrup_accounts VALUES (DEFAULT,'cyrus@domain.tld','FIXME',0,0,DEFAULT,DEFAULT,DEFAULT,DEFAULT,'cyrus admin','1');

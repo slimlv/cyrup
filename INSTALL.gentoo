@@ -1,0 +1,47 @@
+/*
+ * $RCSfile: INSTALL.gentoo,v $ $Revision: 1.1 $
+ * $Author: slim_lv $ $Date: 2008/05/08 13:31:21 $
+ * This file is part of CYRUP project
+ */
+
+
+This INSTALL.gentoo describes additional steps for Gentoo 
+
+Install Gentoo (www.gentoo.org)
+
+----- /etc/portage/package.use:
+dev-lang/php cli cgi mysql gd exif ftp gmp session zip xml
+mail-client/squirrelmail        -crypt -mysql -ssl
+net-mail/cyrus-imapd autocreate autosieve unsupported_8bit
+sys-auth/pam_mysql openssl
+www-servers/lighttpd	fastcgi mysql pcre php ssl
+
+----- EBUILDS :
+
+    app-admin/tmpwatch
+    app-antivirus/clamav
+    app-arch/unzip
+    ( dev-db/mysql | dev-db/postgresql )
+    dev-lang/php
+    dev-libs/cyrus-sasl
+    mail-client/squirrelmail
+    mail-filter/amavisd-new
+    mail-filter/spamassassin
+    mail-mta/postfix
+    net-mail/cyrus-imap-admin
+    net-mail/cyrus-imapd
+    sys-auth/pam_mysql
+    www-servers/lighttpd
+
+----- START-UP:
+
+    rc-update -a cyrus default
+    rc-update -a lighttpd default
+    rc-update -a mysql default
+    rc-update -a postfix default
+
+----- ADDITIONAL CONFIGS:
+
+/etc/conf.d/saslauthd
+SASLAUTHD_OPTS=" -n0 -r "
+

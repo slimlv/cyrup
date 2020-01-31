@@ -1,0 +1,92 @@
+
+dummy {
+}
+
+body {
+    font-family: Verdana;
+    font-size: 12px;
+}
+
+ul,li {
+    margin-top: 0;
+    font-size: 11px;
+    font-family: Verdana;
+    color: #0000D0;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a:link,a:visited {
+    font-size: 12px;
+    font-family: Verdana;
+    color: #0000D0;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a:hover {
+    font-size: 12px;
+    font-family: Verdana;
+    color: #6060D0;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a.button_sel:link,a.button_sel:visited {
+    font-size: 12px;
+    font-family: Verdana;
+    color: #D00000;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+p {
+    font-size: 11px;
+    font-family: Verdana;
+    color: #000000;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+td {
+    font-family: Verdana; 
+    font-size: x-small;
+}
+
+td.selected {
+    font-family: Verdana; 
+    font-size: x-small;
+    background-color: #BBBBBB;
+    color: #FFFFFF;
+}
+
+th {
+    font-size: x-small;
+    font-family: Verdana;
+    background-color: #FFFFFF;
+}
+
+th.selected {
+    font-size: x-small;
+    font-family: Verdana;
+    background-color: #DADADA;
+}
+
+th.caption {
+    font-size: x-small;
+    font-family: Verdana;
+    background-color: #FFFFFF;
+}
+
+tr.highlight {
+    background-color: #ECECEC;
+}
+
+a.selected {
+    font-size: 11px;
+    font-family: Verdana;
+    color: #D00000;
+    font-weight: bold;
+    text-decoration: underline;
+}
+

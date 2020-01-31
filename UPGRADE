@@ -1,0 +1,16 @@
+
+    HOW TO UPGRADE
+
+Overwrite files in include/ and js/ folders with new versions.
+Check out config.inc.php for main settings.
+Note: config.inc.php is located in top folder.
+
+upgrade to 2.4 to requires following changes:
+ 1. file mysql-virtual-domains.cf was changed, additional_conditions was appended
+ 2. table cyrup_domains requires update to set enabled to true:
+   UPDATE `cyrup_domains` SET `enabled` = 1;
+
+upgrade to 2.3 brings new defines in config.inc.php
+ 1. SHOW_VACATION_LIST - to enable parsing of Sieve scripts for vacation. This may slow down UI
+ 2. SYSTEM_ALIASES - postfix pcre database where system aliases (postmaster|abuse) are stored
+ 3. DEFAULT_DOMAIN - reflects 'defaultdomain' of cyrus to allow short-name (without domain part) authorization

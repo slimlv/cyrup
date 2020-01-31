@@ -1,0 +1,93 @@
+<?php
+# Primary configuration options. This is where you should start.
+
+    define( 'ADMIN_USER', 'admin' );
+
+    // Where the root of this project is visible from web
+    define( 'BASE_URL', 'http'.( isset($_SERVER['HTTPS']) ? 's' : '' ).'://'.$_SERVER['HTTP_HOST'] .dirname($_SERVER['SCRIPT_NAME']) );     
+
+    define( 'INCLUDE_DIR', 'includes' );
+    define( 'AUTHSIGN', "<a href='http://cyrup.sf.net' target='_blank'>cyrup.sf.net</a>" );
+
+
+    // "mysql" for MySQL, "mpdo" for mysql PDO, "pgsql" for PostgreSQL 
+    define( 'DB_TYPE', 'mpdo' );
+
+    # SQL
+    define( 'SQL_HOST', 'localhost' );
+    define( 'SQL_DB',   'mail' );
+    define( 'SQL_USER', 'postfix' );
+    define( 'SQL_PASS', 'XXXXX' );
+
+    # Cyrus
+    define( 'CYRUS_HOST', 'localhost' );
+    define( 'CYRUS_PORT', 143 );
+    define( 'CYRUS_USER', 'cyrus' );
+    define( 'CYRUS_PASS', 'XXXXX' );
+
+ 
+    // Default delimiter is '.' Must be '/' when unixhierarchysep is set to 1 in imapd.conf
+    define( 'CYRUS_DELIMITER', '/' );
+
+    // Available: USERSUFFIX, USER@DOMAIN.TLD
+    // "USERSUFFIX":  Mailboxes will be created with the suffix specified for each domain. For examaple "user_bogus", where suffix is "_bogus". Suffix may be empty only for one domain.
+    // "USER@DOMAIN.TLD" (RECOMMENDED): This style mailboxes works as virtual_mailbox_maps
+
+    define( 'MAILBOX_STYLE', 'USER@DOMAIN.TLD' ); // Available: USERSUFFIX, USER@DOMAIN.TLD
+
+    //  it is possible to set DEFAULT_DOMAIN same as "defaultdomain" in imapd.conf if MAILBOX_STYLE is set to USER@DOMAIN.TLD. Works with saslauthd only
+    define( 'DEFAULT_DOMAIN', '' );
+
+    // The same meaning as for pam_mysql crypt parameter. See pam_mysql docs for details
+    // 0 - means clear text passwords,
+    // 1 - UNIX crypt()
+    // 2 - use MySQL's PASSWORD() NOT VALID FOR PGSQL 
+    // 3 - MD5
+    // 4 - SHA1 (RECOMMENDED)
+    define( 'PASSWORD_CRYPT', 0 );	
+
+# User interface & miscelaneous options
+
+    // true - one html "<input type=text ..." field (usefull only with PASSWORD_CRYPT=0) 
+    // false - two html "<input type=password ..." input fields (enter & reenter)
+    define( 'SHOW_PASSWORD', false ); 
+
+    // Minimal password length
+    define( 'MIN_PASSWORD_LENGTH', 4 );
+    // Default user quota in megabytes
+    define( 'DEFAULT_QUOTA', 50 );
+    // Allow to disable user's quota 
+    define( 'ALLOW_NO_QUOTA', 1 );
+
+    // Report vacation status in list of accounts (may be slow)
+    define( 'SHOW_VACATION_LIST', 0 );
+
+    // Where to save list of domains.  May be used to speed-up domain search. A webserver's user needs to have write permissions to this file. 
+    define( 'DOMAIN_EXPORT_FILE', '/etc/postfix/local.domains' ); 
+
+    // Export system domain names for system aliases ( postmaster etc )
+    define( 'SYSTEM_ALIASES', '/etc/postfix/aliases.pcre' ); 
+
+    define ( 'SESS_LIFE' , get_cfg_var('session.gc_maxlifetime'));
+
+    // Folders to be created for new accounts (but not subscribed)
+    const IMAP_FOLDERS = [ 'SPAM' ];  
+
+    define( 'JS_URL', BASE_URL.'/js' );
+    define( 'IMAGES_URL', BASE_URL.'/img' );
+
+    // Version. The bigger the better
+    define( 'VERSION', ' CyrUp v2.3' );
+    define( 'TITLE', VERSION.': ' );
+
+    # Debug level & verbose messages
+    define( 'D_NONE', 0 );           // no debug messages
+    define( 'D_INCLUDE', 1 );        // include() or require()
+    define( 'D_FUNCTION', 2 );       // most function calls
+    define( 'D_SQL_ERROR', 4 );      // sql errors
+    define( 'D_IMAP_ERROR', 8 );     // imap errors
+    define( 'D_ALL', 255 );          // full verbose
+
+    define ( 'DEBUG_LEVEL', D_SQL_ERROR | D_IMAP_ERROR );
+#    define ( 'DEBUG_LEVEL', D_ALL );
+#    define ( 'DEBUG_LEVEL', D_SQL_ERROR | D_FUNCTION | D_INCLUDE );

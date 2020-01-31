@@ -1,0 +1,2 @@
+- alias to multi account support
+- modify verify_email if email is local to check local aliases

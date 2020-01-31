@@ -1,0 +1,138 @@
+/*
+ * $RCSfile: INSTALL.debian,v $ $Revision: 1.10 $
+ * $Author: slim_lv $ $Date: 2016/12/28 14:33:30 $
+ * This file is part of CYRUP project
+ */
+
+
+This INSTALL.debian describes additional steps for Debian
+
+Install Debian (www.debian.org)
+
+----- PACKAGES :
+    postfix
+    postfix-mysql
+    postfix-pcre
+    postfix-tls 
+    cyrus-imapd
+    cyrus-pop3d
+    mysql-server
+    php5-cgi 
+    php5-mysql
+    lighttpd
+    spamassassin
+    amavisd-new
+    clamav-daemon
+    unrar-free
+    tmpreaper
+    dpkg-dev
+    sasl2-bin
+    libsasl2-modules
+    libssl-dev
+    pkg-config
+    php-net-sieve  
+
+----- ADDITIONAL CONFIGS:
+
+----- CLAMD
+Append followin line to /etc/apt/sources.list before installing clamav-daemon:
+
+deb http://volatile.debian.org/debian-volatile etch/volatile main contrib non-free 
+
+----- CRONTAB:
+# Remove virus/spam files older than 40*24 hours
+02 1 * * * root /usr/sbin/tmpreaper 5d /var/lib/amavis/virusmails/
+
+----- SASLAUTHD
+/etc/default/saslauthd:
+START=yes
+OPTIONS="-r"
+
+----- PAM_MYSQL (thanx to R Williams) for Lenny. Simple re-comiple required for fresh Debian versions to catch openssl for sha1 only:
+
+The standard pam_mysql.so is 0.6.2-1 and SHA1 is not supported.
+There is a bug that causes an error with MD5 and the workaround is to
+re-compile openssl.
+    mkdir /usr/src/libpam-mysql
+    cd /usr/src/libpam-mysql
+    apt-get source pam-mysql
+    apt-get build-dep pam-mysql
+    cd pam-mysql-0.6.2
+Edit ./debian/rules line 51
+    ./configure --prefix=/usr --with-openssl
+Edit line 109 of ./Makefile.in
+    DEFS = @DEFS@ -I. -I$(srcdir) -I. -DHAVE_OPENSSL
+Edit line 6 of ./debian/control
+    Build-Depends: libpam0g-dev, libmysqlclient15-dev, libssl-dev, debhelper (>= 4.0.0)
+Build the package and install it
+    dpkg-buildpackage
+    dpkg --install libpam-mysql_0.6.2-1_i386.deb
+(The file name may be slightly different if installing on different
+hardware. For example libpam-mysql_0.6.2-1_amd64.deb for AMD64
+installations).
+As well You can install latest pam-mysql for SHA1 crypt with minor changes of debian's original patch
+
+----- CYRUS
+/etc/imapd.conf:
+    admins: cyrus
+    popminpoll: 0
+
+----- POSTFIX
+/etc/postfix/main.cf:
+    virtual_transport = lmtp:unix:/var/run/cyrus/socket/lmtp/
+/etc/postfix/mysql-virtual-*:
+'hosts' should be 127.0.0.1 due default debian's mysql config
+
+We need some special settings cos  postix works in chroot 
+    mkdir -p /var/spool/postfix/var/run/cyrus/socket
+    mkdir -p /var/spool/postfix/var/run/saslauthd
+
+/etc/fstab:
+/var/run/cyrus/socket    /var/spool/postfix/var/run/cyrus/socket    none      rw,bind    0 0
+/var/run/saslauthd       /var/spool/postfix/var/run/saslauthd	    none      rw,bind    0 0
+
+In case of Ubuntu where /var/run is mounted as tmpfs fstab lines must be changed to use 'noauto' option
+and folders may be mounted from /etc/rc.local
+
+Right permissions:
+    dpkg-statoverride --force --update --add cyrus postfix 750 /var/run/cyrus/socket
+    adduser postfix sasl
+    adduser clamav amavis
+    chown root:www-data /etc/postfix/local.domains
+
+/etc/postfix/sasl/smtpd.conf 
+    echo "
+    pwcheck_method: saslauthd
+    mech_list: plain login
+    sql_select: dummy " >/etc/postfix/sasl/smtpd.conf
+
+----- AMAVISD
+/etc/amavis/conf.d/15-content_filter_mode:
+ uncomment here to enable checks
+ 
+/etc/amavis/conf.d/50-user:
+$myproduct_name = "virus/spam checker";
+$mydomain = 'domain.tld';
+$forward_method = 'smtp:[127.0.0.1]:10025';
+@local_domains_maps = ( read_hash("/etc/postfix/local.domains") );
+$insert_received_line = 0;
+@mynetworks = qw( 127.0.0.0/8 ::1 );
+$log_level = 0;
+$warnvirussender = 1;
+$warnspamsender = 1;
+$warnbannedsender = 1;
+$warnbadhsender = 1;
+$virus_quarantine_to  = 'virus-quarantine';
+$banned_quarantine_to     = 'banned-quarantine';
+$bad_header_quarantine_to = 'bad-header-quarantine';
+$spam_quarantine_to       = 'spam-quarantine';
+$sa_spam_subject_tag = '[SPAM] ';
+$sa_spam_level_char = '*';
+$sa_tag_level_deflt  = 1.0;
+$sa_tag2_level_deflt = 3.0;
+$sa_kill_level_deflt = 6.31;
+$sa_dsn_cutoff_level = 8.0;
+$first_infected_stops_scan = 1;
+
+/etc/spamassassin/local.cf:
+skip_rbl_checks 1

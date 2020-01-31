@@ -1,0 +1,92 @@
+/*
+ * $RCSfile: CHANGELOG,v $ $Revision: 1.17 $
+ * $Author: slim_lv $ $Date: 2016/11/01 14:16:45 $
+ * This file is part of CYRUP project
+ * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@inbox.lv)
+ */
+
+20191023 <slim_lv@users.sourceforge.net>
+  new: mysql pdo driver
+
+20161101 <slim_lv@users.sourceforge.net>
+  bugfix: always use trailing slash with BASE_URL
+
+20120903 <slim_lv@users.sourceforge.net>
+    new: allow to disable whole domain to receive incoming mails. Users authorization via POP3/IMAP/SMTP is not affected
+
+20110105 <slim_lv@users.sourceforge.net>
+    new: autoreply can be configured for any account (require Net_Sieve PEAR class) - Roundcube/Avelsieve tested so far
+    new: config option SHOW_VACATION_LIST allows to show autoreply status in list of accounts
+
+20091025 <slim_lv@users.sourceforge.net>
+    new: config option DEFAULT_DOMAIN allows usage of 'defaultdomain' in cyrus.conf with cyrup
+
+20081222 <slim_lv@users.sourceforge.net>
+    bugfix: fix php notice on undefined variables
+
+20080828 <slim_lv@users.sourceforge.net> 
+    new: new toolbar to filter listing in Accounts/Aliases/Maillists pages
+
+20080826 <slim_lv@users.sourceforge.net> 
+    new: config.inc.php - set SYSTEM_ALIASES to create aliases for common system users
+
+20080430 <slim_lv@users.sourceforge.net> 
+    bugfix: includes/integrity.inc.php - incorrect identification of CYRUS_USER user
+
+20070622 <slim_lv@users.sourceforge.net>
+    
+    bugfix: includes/imap.inc.php - simplified mailbox renames code when using USER@DOMAIN.TLD scheme
+    bugfix: includes/integrity.inc.php - checks are improved for USER@DOMAIN.TLD scheme
+    new: INSTALL - new section added - how-to run without pam/saslauthd and with cleartext passwords 
+
+20070513 <slim_lv@users.sourceforge.net>
+    
+    new: multi admin support is added
+
+20070105 <slim_lv@users.sourceforge.net>
+    
+    new: config file (config.inc.php) is moved to root 
+    bugfix: includes/imap.inc.php - incorrect imap string for creation IMAP folder when 
+	    MAILBOX_STYLE = "USER@DOMAIN.TLD" 
+
+20060818 <slim_lv@users.sourceforge.net>
+
+    new: README - new section NOTES
+    new: PostgreSQL support added, code by Brett Van Sprewenburg <brett(at)ataxxia.com>
+
+20060204 <slim_lv@users.sourceforge.net>
+
+    new: INSTALL - saslauthd options
+    bugfix: accountform.php - unclosed HTML tag
+
+20060202 <slim_lv@users.sourceforge.net>
+
+    new: autocreate custom IMAP folders on account creation
+
+20060201 <slim_lv@users.sourceforge.net>
+
+    changes: config.php - SHA1() for passwords by default
+    new: INSTALL - bayes options
+    typo: INSTALL - in postfix config option
+
+20060104 <slim_lv@users.sourceforge.net>
+
+    bugfix: scripts/cyrup.mysql.sql -  DROP before CREATE
+
+20051106 <slim_lv@users.sourceforge.net>
+
+    typo: includes/config.inc.php - version number is 2.0 right now
+
+20051103 <slim_lv@users.sourceforge.net>
+
+    bugfix: scripts/cyrup.mysql.sql - incorrect fields number inserting admin's password
+
+20051020 <slim_lv@users.sourceforge.net>
+    
+    2.0 pre
+    install.php added
+    bugfix: includes/mysql.inc.php
+
+20051017 <slim_lv@users.sourceforge.net>
+    
+    entry version
