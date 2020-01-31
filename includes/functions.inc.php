@@ -10,7 +10,6 @@
 
     if ( !defined('DEFAULT_DOMAIN') ) define('DEFAULT_DOMAIN','');
     if ( !defined('SHOW_VACATION_LIST') ) define('SHOW_VACATION_LIST', 0);
-    if ( !defined('IMAP_FOLDERS') ) const IMAP_FOLDERS = [];
 
     function chks2sql( $sql_field = "id" ) {
 
