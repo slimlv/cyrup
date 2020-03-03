@@ -1,14 +1,6 @@
 <?php
-/*
- * $RCSfile: mysql.inc.php,v $ $Revision: 1.5 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:09:36 $
- * This file is part of CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
 
     if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
-    
-
     DEBUG( D_INCLUDE, "sql.inc.php" );
 
     $GLOBALS['sql_last_result'] = null;
@@ -20,6 +12,10 @@
         print "<font color=red><b>FATAL: </b></font><pre>";
         print_r(PDO::errorInfo);
         exit();
+    }
+
+    function sql_escape($str) {
+       return PDO::quote($str);
     }
 
     function sql_connect( $database=SQL_DB, $username=SQL_USER, $password=SQL_PASS ) {
