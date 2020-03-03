@@ -12,15 +12,13 @@
     if ( !defined('SHOW_VACATION_LIST') ) define('SHOW_VACATION_LIST', 0);
 
     function chks2sql( $sql_field = "id" ) {
-
         $i = 0;
         $at_least_one = 0;
         $sel = "";
-        while ( $i <= sizeof( $_POST['ids'] ) ) {
+        while ( $i <= sizeof($_POST['ids']) ) {
             if ( isset( $_POST['chks'][$i] ) AND ( $_POST['chks'][$i] == "on" ) ) {
-                if ( $at_least_one )
-                    $sel .= " OR ";
-                $sel .= $sql_field."='".intval($_POST['ids'][$i])."'";
+                if ( $at_least_one ) $sel .= " OR ";
+                $sel .= "$sql_field = ".intval($_POST['ids'][$i]);
                 $at_least_one++;
             }
             $i++;
@@ -29,13 +27,11 @@
     }
 
     function chks2array() {
-
-        $ids = array();
-		if ( empty($_POST['ids']) ) return $ids;
+        $ids = [];
+        if ( empty($_POST['ids']) || !is_array($_POST['ids']) ) return $ids;
         $i = 0;
         while ( $i <= count( $_POST['ids'] ) ) {
-            if ( isset( $_POST['chks'][$i] ) AND ( $_POST['chks'][$i] == "on" ) ) 
-                $ids[] = intval($_POST['ids'][$i]);
+            if ( isset( $_POST['chks'][$i] ) && $_POST['chks'][$i] == "on" ) $ids[] = intval($_POST['ids'][$i]);
             $i++;
         }
         return $ids;
@@ -49,7 +45,7 @@
         if ( trim($_SESSION['RIGHTS']) == "" ) 
             return ( $put_where ? ' WHERE ' : ' AND ' ).' null ';
         else 
-            return ( $put_where ? ' WHERE ' : ' AND ' ).$sql_field.' IN ('.addslashes($_SESSION['RIGHTS']).') ';
+            return ( $put_where ? ' WHERE ' : ' AND ' ).$sql_field.' IN ('.($_SESSION['RIGHTS']).') ';
     }
     die('Incorrect function call: rights2sql()');
   }
@@ -175,7 +171,7 @@
                     SELECT alias FROM cyrup_maillists WHERE domain_id=".$domain_id );
         $row['aliases_cur'] = sql_num_rows();
 
-        sql_query( "SELECT COUNT(*) AS '0', SUM(quota) AS '1' FROM cyrup_accounts WHERE domain_id=".$domain_id );
+        sql_query( "SELECT COUNT(*) AS accounts_cur, SUM(quota) AS quota_cur FROM cyrup_accounts WHERE domain_id=".$domain_id );
         list( $row['accounts_cur'], $row['quota_cur'] ) = sql_fetch_array();
 
         return $row;
