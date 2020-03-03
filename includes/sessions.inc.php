@@ -12,9 +12,7 @@
 
     function sess_open( $save_path, $session_name ) {
         DEBUG( D_FUNCTION, "sess_open('$save_path', '$session_name')" );
-
-        sess_gc( 0 );
-
+        sess_gc(0);
         return true;
     }
 
@@ -26,37 +24,28 @@
     function sess_read( $session_id ) {
         DEBUG( D_FUNCTION, "sess_read('$session_id')" );
 
-        $session_id = addslashes( $session_id );
-
-        $query = "SELECT value FROM cyrup_sessions WHERE sesskey='".$session_id."'";
-        sql_query( $query );
-
-        if ( $val = sql_fetch_variable() ) return $val;
-
+        $query = "SELECT value FROM cyrup_sessions WHERE sesskey=".sql_escape($session_id);
+	sql_query( $query );
+        if ( $val = sql_fetch_variable() ) { return $val; }
         return "";
     }
 
     function sess_write( $session_id, $val ) {
         DEBUG( D_FUNCTION, "sess_write('$session_id', '$val')" );
 
-#        $session_id = addslashes( $session_id );
-        $val = addslashes( $val );
-
         $expiry = time() + SESS_LIFE;
-        $query = "DELETE FROM cyrup_sessions WHERE sesskey='".$session_id."'";
+        $query = "DELETE FROM cyrup_sessions WHERE sesskey=".sql_escape($session_id);
         sql_query( $query );
-        $query = "INSERT INTO cyrup_sessions (sesskey,expiry,value) VALUES ('".$session_id."','".$expiry."','".$val."')";
+        $query = "INSERT INTO cyrup_sessions (sesskey,expiry,value) VALUES (".sql_escape($session_id).",".sql_escape($expiry).",".sql_escape($val).")";
         $ecode = sql_query( $query );
         return true;
     }
 
     function sess_destroy( $session_id ) {
         DEBUG( D_FUNCTION, "sess_destroy('$session_id')" );
-
-        $query = "DELETE FROM cyrup_sessions WHERE sesskey='".$session_id."'";
-        $qid = sql_query( $query );
-
-        return $qid;
+        $query = "DELETE FROM cyrup_sessions WHERE sesskey=".sql_escape($session_id);
+        sql_query( $query );
+	return true;
     }
 
     function sess_gc( $maxlifetime ) {
@@ -69,5 +58,4 @@
     }
 
     session_set_save_handler( "sess_open", "sess_close", "sess_read", "sess_write", "sess_destroy", "sess_gc" );
-
     session_start();
