@@ -1,6 +1,5 @@
 <?php
-
-    if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
+    defined("INCLUDE_DIR") || exit("Not for direct run");
 
     if (!isset($_SESSION['domain_id'])){
         header( "Location: ".BASE_URL."?admin" );
@@ -52,26 +51,25 @@
 
       if ( empty($errors) ) {
 
-	    $query = "cyrup_maillists SET domain_id=".$domain_id.", enabled=".$enabled.", alias=".sql_escape($alias).", aliased_to=".sql_escape($members);
+        if ( !empty($maillist_id) ) {
+          $query = "UPDATE cyrup_maillists SET domain_id=${domain_id}, enabled=${enabled}, 
+                 alias=".sql_escape($alias).", aliased_to=".sql_escape($members)." WHERE id=".$maillist_id;
+        } else {
+	  $query = "INSERT INTO cyrup_maillists (domain_id, enabled, alias, aliased_to)
+                VALUES (${domain_id},${enabled},".sql_escape($alias).",".sql_escape($members).")";
+        }
 
-	    if ( isset($maillist_id) )
-		$query = "UPDATE ".$query." WHERE id=".$maillist_id;
-	    else
-		$query = "INSERT INTO cyrup_maillists (domain_id, enabled, alias, aliased_to)
-				VALUES (".$domain_id.",".$enabled.",".sql_escape($alias).",".sql_escape($members).")";
-
-            sql_query( $query );
-	    header( "Location: ".BASE_URL."?admin&m=maillists" );
-	    exit;
-	}
+        sql_query( $query );
+        header( "Location: ".BASE_URL."?admin&m=maillists" );
+        exit;
+      }
     }
 
     if ( !empty($_GET['id']) && $_GET['id'] == intval($_GET['id']) ) {
-	sql_query( "SELECT * FROM cyrup_maillists WHERE id=".$_GET['id']." AND domain_id=".$domain_id  );
-	if ( 1 == sql_num_rows() ) {
-	    $maillist_id = intval($_GET['id']);
-	    $row = sql_fetch_array();
-	}
+      sql_query( "SELECT * FROM cyrup_maillists WHERE id=".$_GET['id']." AND domain_id=".$domain_id  );
+      if ( $row = sql_fetch_array() ) {
+        $maillist_id = $row['id'];
+      }
     }
 
     print_header(TITLE."Maillist form");
@@ -79,15 +77,15 @@
     print "<script type=\"text/javascript\" src='".JS_URL."/functions.js' language=\"JavaScript\"></script>\n";
     print "<script type=\"text/javascript\" src='".JS_URL."/checkemail.js' language=\"JavaScript\"></script>\n";
     print "<center>\n<form name=form ";
-    print "action='".BASE_URL."/?admin&m=maillistform".(isset($maillist_id)?"&id=".$maillist_id:"")."' method=POST>\n";
+    print "action='".BASE_URL."?admin&m=maillistform".(!empty($maillist_id)?"&id=${maillist_id}":"")."' method=POST>\n";
     print "<input type=hidden name=action>\n";
 
     if ( isset( $maillist_id ) ) {
-	print "<input type=hidden name=id value='".$maillist_id."'>\n";
+      print "<input type=hidden name=id value='".$maillist_id."'>\n";
     } else {
-	( isset($alias) ? $row['alias'] = $alias : $row['alias'] = "" );
-        ( isset($aliased_to) ? $row['aliased_to'] = $aliased_to : $row['aliased_to'] = "" );
-        ( isset($enabled) ?  $row['enabled'] = $enabled : $row['enabled'] = 1 );
+      $row['alias'] = empty($alias) ? "" : $alias;
+      $row['aliased_to'] = empty($aliased_to) ? '' : $aliased_to;
+      $row['enabled'] = isset($enabled) ? $enabled : 1 ;
     }
 
     print "<table align=center border=0 cellpadding=0 cellspacing=0>\n";
@@ -115,9 +113,8 @@
     print "<input type=button value=Add onClick='javascript:addEmailToMembers(document.forms[\"form\"].elements[\"email\"]);return false;'>\n";
     print "</td>\n</tr>\n";
     dotline( 2 );
-    if ( (isset($errors)) AND (sizeof($errors)) ) {
-        print "<tr class=highlight>
-        <td colspan=2 align=center>";
+    if ( $errors ) {
+        print "<tr class=highlight><td colspan=2 align=center>";
         print_errors( $errors ); 
         print "</tr>";
         dotline( 2 ); 
@@ -127,10 +124,10 @@
     print ( isset($maillist_id) ? "Update" : "Add new" )."'></td>\n";
     print "</tr>\n</table>\n<br></form></center>\n";
     print "<script language='JavaScript'>\n//<!--\n";
-    print "var cur_members = new Array(".( isset($maillist_id) ? "'".str_replace(",", "',\n\t\t\t'", $row['aliased_to'])."'" : "" ).");\n";
+    print "var cur_members = new Array(".( !empty($maillist_id) ? "'".str_replace(",", "',\n\t\t\t'", $row['aliased_to'])."'" : "" ).");\n";
 
-    $aliases_arr = array();
-    sql_query( "SELECT * FROM cyrup_aliases WHERE enabled='1' AND domain_id=".$domain_id." ORDER BY alias" );
+    $aliases_arr = [];
+    sql_query( "SELECT * FROM cyrup_aliases WHERE enabled='1' AND domain_id=${domain_id} ORDER BY alias" );
     while ( $row = sql_fetch_array() ) {
       $aliases_arr[] ="'".htmlspecialchars($row['alias'])."'";
     }

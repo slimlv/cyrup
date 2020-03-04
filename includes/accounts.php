@@ -54,7 +54,7 @@
         print "<tr>\n";
         print "<th width=1><input type=checkbox name=chkChangeAll onClick='check_boxes()'></th>\n";
         html_th( "account", "Account" );
-        html_th( "enabled", "POP", "Can user connect to his mailbox?" );
+        html_th( "enabled", "Active", "Can user connect to his mailbox?" );
         html_th( "aliases_cur", "Aliases", "Current number of aliases" );
         if ( SIEVE ) html_th( 'vacation', 'V', 'Current status of autoreply' );
         html_th( "quota", "Quota Used/Max (%)" );
