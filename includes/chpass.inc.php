@@ -1,10 +1,4 @@
 <?php
-/*
- * $RCSfile: chpass.inc.php,v $ $Revision: 1.4 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:09:36 $
- * This file is part of CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
 
     if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
 
@@ -12,11 +6,9 @@
     if ( isset($_GET['chpass']) ) {
 	$account = $_SESSION['USER'];
         $row = sql_fetch_array( 
-	    sql_query( "SELECT id FROM cyrup_admins 
-			WHERE username='".$account."' AND password="
-			.get_sql_crypt( $_POST['old_password'] ) ) );
-        $errors = array();
-        if ( (!$row) OR ( CYRUS_USER == $account ) )
+	    sql_query( "SELECT id FROM cyrup_admins WHERE username=".sql_escape($account)." AND password=" .get_sql_crypt($_POST['old_password']) ) );
+        $errors = [];
+        if ( !$row || CYRUS_USER == $account )
             array_push( $errors, "Wrong login name or password" );
         if ( $_POST['new_password'] != $_POST['new_password_retype'] )
             array_push( $errors, "New password and retyped new password do not match" );
@@ -24,10 +16,10 @@
             array_push( $errors, "Minimal password length is ".MIN_PASSWORD_LENGTH );
         if ( sizeof($errors) == 0 ) {
             sql_query( "UPDATE cyrup_admins SET password="
-                .get_sql_crypt( $_POST['new_password'] )." WHERE id='".$row['id']."'");
+                .get_sql_crypt($_POST['new_password'])." WHERE id='".$row['id']."'");
             array_push( $errors, "Password successfully changed" );
         }
-    };
+    }
 
 ?>
 <br /><br /><center>

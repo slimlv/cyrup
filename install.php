@@ -44,9 +44,8 @@
         <td>Setting "cyrus" users password according to CYRUS_PASS variable:
 <?php
     
-    sql_query( "UPDATE cyrup_accounts SET password=".get_sql_crypt( CYRUS_PASS )." WHERE account='cyrus'");
-    if ( sql_affected_rows() == 1 )
-	print (  sql_affected_rows() == 1 ? pc(1) : "Already set");
+    sql_query( "UPDATE cyrup_accounts SET password=".get_sql_crypt(CYRUS_PASS)." WHERE account='cyrus'");
+    if ( sql_affected_rows() == 1 ) print sql_affected_rows() == 1 ? pc(1) : "Already set";
     print " </td> </tr> </table>";
     print_footer();
 

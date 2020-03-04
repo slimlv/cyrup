@@ -1,93 +1,78 @@
 <?php
-/*
- * $RCSfile: maillistform.php,v $ $Revision: 1.7 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:09:36 $
- * This file is part of CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
 
     if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
 
     if (!isset($_SESSION['domain_id'])){
-        header( "Location: ".BASE_URL."/?admin" );
+        header( "Location: ".BASE_URL."?admin" );
         exit;
-    };
+    }
 
     $domain_id = $_SESSION['domain_id'];
-    $domain_row = get_domain_info( $domain_id );
+    $domain_row = get_domain_info($domain_id);
+    $errors = [];
 
     if ( isset($_POST['action']) ) {
-	
-	$errors = array();
-	settype( $members, "array" );
-	$enabled  = ( isset($_POST['enabled']) ? 1 : 0 );
-	if ( (isset( $_POST['id'])) AND (0 != intval($_POST['id'])) ) {
-	    sql_query( "SELECT * FROM cyrup_maillists WHERE id='".intval($_POST['id'])."'
-                                                                AND domain_id='".$domain_id."'"  );
-	    if ( 1 == sql_num_rows() ) 
-		$maillist_id = intval($_POST['id']);
-	    else 
-		array_push( $errors, "This maillist absent" );
-        };
-        // Check maillist name
-	if ( isset($_POST['alias']) AND !preg_match('/^([\w\-\.])+$/',$_POST['alias']) )
-            array_push( $errors, "Alias empty or contains illegal symbols" );
-        else
-            $alias = strtolower( trim(preg_replace('/[^\w\-\.]/','',$_POST['alias'])) )."@".$domain_row['domain'];
-
-	// Check new alias to be already exist
-	$query = "SELECT 1 FROM cyrup_maillists WHERE alias='".$alias."'";
-	if ( isset($maillist_id) ) 
-	    $query .= " AND id<>'".$maillist_id."'";
-	if ( 0 < sql_num_rows(sql_query($query)) )
-	    array_push( $errors, "Maillist with this name already exists" );
-	$query = "SELECT 1 FROM cyrup_aliases WHERE alias='".$alias."'";
-	if ( 0 < sql_num_rows(sql_query($query)) )
-	    array_push( $errors, "Alias with this name already exists" );
-
-	// Check for correct members
-	if ( (!isset($_POST['members'])) OR (0 == count($_POST['members'])) ) {
-	    array_push( $errors, "No members" );
+      $members = [];
+      $enabled = !empty($_POST['enabled']) ? 1 : 0;
+      if ( !empty($_POST['id']) && $_POST['id'] == intval($_POST['id']) ) {
+        sql_query( "SELECT * FROM cyrup_maillists WHERE id=".$_POST['id']." AND domain_id=".$domain_id );
+        if ( 1 == sql_num_rows() ) {
+          $maillist_id = intval($_POST['id']);
 	} else {
-	    if ( count(array_filter($_POST['members'],"verify_email")) )
-		$members = implode( ",", array_filter($_POST['members'],"verify_email") );
-	    else 
-		array_push( $errors, "No valid members" );
-	};
+          $errors[] = "This maillist absent";
+	}
+      }
 
-	if ( (!isset($maillist_id)) AND ($domain_row['aliases_max'])
-        AND ($domain_row['aliases_cur'] >= $domain_row['aliases_max']) )
-	    array_push( $errors, "Maximum number of aliases for the domain reached" );
+      // Check maillist name
+      if ( isset($_POST['alias']) && !preg_match('/^([\w\-\.])+$/',$_POST['alias']) ) {
+        $errors[] = "Alias empty or contains illegal symbols";
+      } else {
+        $alias = strtolower( trim(preg_replace('/[^\w\-\.]/','',$_POST['alias'])) )."@".$domain_row['domain'];
+      }
 
-	if ( sizeof($errors) == 0 ) {
+      // Check new alias to be already exist
+      $query = "SELECT 1 FROM cyrup_maillists WHERE alias=".sql_escape($alias);
+      if ( isset($maillist_id) ) $query .= " AND id<> ".$maillist_id;
+      if ( 0 < sql_num_rows(sql_query($query)) ) $errors[] = "Maillist with this name already exists";
 
-	    $query = "cyrup_maillists SET domain_id='".$domain_id."', enabled='".$enabled."',
-                                                alias='".$alias."', aliased_to='".addslashes($members)."'";
+      $query = "SELECT 1 FROM cyrup_aliases WHERE alias=".sql_escape($alias);
+      if ( 0 < sql_num_rows(sql_query($query)) ) $errors[] = "Alias with this name already exists";
+
+      // Check for correct members
+      if ( empty($_POST['members']) ) {
+        $errors[] = "No members";
+      } else {
+        $members = implode( ",", array_filter($_POST['members'],"verify_email") );
+        if (!$members) $errors[] = "No valid members";
+      }
+
+      if ( !isset($maillist_id) && ($domain_row['aliases_max']) && $domain_row['aliases_cur'] >= $domain_row['aliases_max'] ) {
+        $errors[] = "Maximum number of aliases for the domain reached";
+      }
+
+      if ( empty($errors) ) {
+
+	    $query = "cyrup_maillists SET domain_id=".$domain_id.", enabled=".$enabled.", alias=".sql_escape($alias).", aliased_to=".sql_escape($members);
 
 	    if ( isset($maillist_id) )
-		$query = "UPDATE ".$query." WHERE id='".$maillist_id."'";
+		$query = "UPDATE ".$query." WHERE id=".$maillist_id;
 	    else
-		$query = "INSERT INTO cyrup_maillists
-				(domain_id, enabled, alias, aliased_to)
-				VALUES
-				('".$domain_id."','".$enabled."','".$alias."',
-				'".addslashes($members)."')";
+		$query = "INSERT INTO cyrup_maillists (domain_id, enabled, alias, aliased_to)
+				VALUES (".$domain_id.",".$enabled.",".sql_escape($alias).",".sql_escape($members).")";
 
             sql_query( $query );
-	    header( "Location: ".BASE_URL."/?admin&m=maillists" );
+	    header( "Location: ".BASE_URL."?admin&m=maillists" );
 	    exit;
-	};
+	}
+    }
 
-    };
-
-    if ( (isset( $_GET['id'])) AND (0 != intval($_GET['id'])) ) {
-	sql_query( "SELECT * FROM cyrup_maillists WHERE id='".intval($_GET['id'])."'
-						AND domain_id='".$domain_id."'"  );
+    if ( !empty($_GET['id']) && $_GET['id'] == intval($_GET['id']) ) {
+	sql_query( "SELECT * FROM cyrup_maillists WHERE id=".$_GET['id']." AND domain_id=".$domain_id  );
 	if ( 1 == sql_num_rows() ) {
 	    $maillist_id = intval($_GET['id']);
 	    $row = sql_fetch_array();
-	};
-    };
+	}
+    }
 
     print_header(TITLE."Maillist form");
     print_top_menu();
@@ -103,7 +88,7 @@
 	( isset($alias) ? $row['alias'] = $alias : $row['alias'] = "" );
         ( isset($aliased_to) ? $row['aliased_to'] = $aliased_to : $row['aliased_to'] = "" );
         ( isset($enabled) ?  $row['enabled'] = $enabled : $row['enabled'] = 1 );
-    };
+    }
 
     print "<table align=center border=0 cellpadding=0 cellspacing=0>\n";
     dotline( 2 ); 
@@ -136,25 +121,21 @@
         print_errors( $errors ); 
         print "</tr>";
         dotline( 2 ); 
-    }; 
+    }
     print "<tr>\n<td>&nbsp;</td>\n<td>\n";
     print "<input type='submit' onClick='javascript:markAll(document.forms[\"form\"].elements[\"members[]\"])' value='";
     print ( isset($maillist_id) ? "Update" : "Add new" )."'></td>\n";
     print "</tr>\n</table>\n<br></form></center>\n";
     print "<script language='JavaScript'>\n//<!--\n";
-    print "var cur_members = new Array("
-        .( isset($maillist_id) ? "'".str_replace(",", "',\n\t\t\t'", $row['aliased_to'])."'" : "" ).");\n";
+    print "var cur_members = new Array(".( isset($maillist_id) ? "'".str_replace(",", "',\n\t\t\t'", $row['aliased_to'])."'" : "" ).");\n";
 
     $aliases_arr = array();
-    sql_query( "SELECT * FROM cyrup_aliases WHERE enabled='1' AND domain_id='".$domain_id."'
-						ORDER BY alias" );
-    while ( $row = sql_fetch_array() )
-        array_push( $aliases_arr, "'".$row['alias']."'" );
-
+    sql_query( "SELECT * FROM cyrup_aliases WHERE enabled='1' AND domain_id=".$domain_id." ORDER BY alias" );
+    while ( $row = sql_fetch_array() ) {
+      $aliases_arr[] ="'".htmlspecialchars($row['alias'])."'";
+    }
     print "var domain_aliases = new Array(".join( ",\n\t\t\t", $aliases_arr ).");\n";
     print "var all_members = domain_aliases;\n";
     print "init(document.forms['form'].elements['members[]'],document.forms['form'].elements['aliases']);\n";
     print "//--></script>\n";
     print_footer();
-
-?>

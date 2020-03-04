@@ -1,25 +1,19 @@
 <?php
-/*
- * $RCSfile: accountform.php,v $ $Revision: 1.12 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:09:36 $
- * This file is part of CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
 
     if ( !defined('INCLUDE_DIR') ) exit('Not for direct run'); 
     if (!isset($_SESSION['domain_id'])){
-        header( "Location: ".BASE_URL."/?admin" );
+        header( "Location: ".BASE_URL."?admin" );
         exit;
-    };
+    }
 
     require_once( INCLUDE_DIR.'/imap.inc.php' );
     require_once( INCLUDE_DIR.'/sieve.inc.php' );
 
     $domain_id = intval($_SESSION['domain_id']);
     $domain_row = get_domain_info( $domain_id );
+    $errors = [];
 
     if ( isset($_POST['action']) ) {
-        $errors = array();
 
         if ( isset($_POST['id']) AND (0 !== intval($_POST['id'])) ) {
             sql_query( "SELECT * FROM cyrup_accounts WHERE id=".intval($_POST['id'])." AND domain_id=".$domain_id );
@@ -243,18 +237,14 @@
         print "<input type=checkbox name=autoalias checked>\n</td>\n</tr>\n";
     }
     dotline( 2 );
-    if ( (isset($errors)) AND (sizeof($errors)) ) {
-        print "<tr class=highlight>
-        <td colspan=2 align=center>";
+    if ( !empty($errors) ) {
+        print "<tr class=highlight><td colspan=2 align=center>";
         print_errors( $errors ); 
         print "</tr>";
         dotline( 2 ); 
     } 
     print "<tr>\n<td>&nbsp;</td>\n<td>";
-    if ( isset($account_id) ) 
-	print "<input type='submit' value='Update'>";
-    else
-	print "<input type='submit' value='Add new'>"; 
+    print "<input type='submit' value='".(isset($account_id) ? 'Update' : 'Add new')."'>";
     print "</td>\n</tr>\n</table>\n</form><br />\n";
     print "<form name='generator'>\nGenerate password:";
     print "<input type='text' name='password' size='12'>\n";
@@ -262,4 +252,3 @@
     print "</form>\n";
     print_footer();
 
-?>
