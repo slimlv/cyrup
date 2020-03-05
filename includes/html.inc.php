@@ -1,27 +1,18 @@
 <?php
-/*
- * $RCSfile: html.inc.php,v $ $Revision: 1.9 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:09:36 $
- * This file is from CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
-
-  if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
+  defined("INCLUDE_DIR") || exit("Not for direct run");
 
   DEBUG( D_INCLUDE, "html.inc.php" );
 
-
   function print_header( $title = VERSION ) {
-	
-    $GLOBALS['execution_start'] = explode( " ", microtime() );	
-    print '<html><head><title>'.$title.'</title>'."\n";
-    print '<link href="'.BASE_URL.'/def.css" rel="stylesheet" type="text/css">'."\n";
+    $GLOBALS['execution_start'] = explode( " ", microtime() );
+
+    print '<html><head><title>'.htmlspecialchars($title).'</title>'."\n";
+    print '<link href="'.BASE_URL.'def.css" rel="stylesheet" type="text/css">'."\n";
     print '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">'."\n";
     print '</head><body bgcolor=white>'."\n";
   }
 
   function print_footer() {
-	
     session_write_close();
 
     $execution_end = explode( " ", microtime() );
@@ -30,7 +21,7 @@
 
     print '<br><center><font face=Courier size=2>Page generation time: ';
     print number_format( $execution_time, 3, '.', '' ).'s<br>';
-    print VERSION.'</font><br>'.AUTHSIGN."</center>\n";
+    print htmlspecialchars(VERSION).'</font><br>'.AUTHSIGN."</center>\n";
     print "</body></html>\n";
   }
 
@@ -39,30 +30,29 @@
     print "<table>\n<tr>\n<td align=left width=1%><img src='".IMAGES_URL."/logo.gif'></td>\n";
     print "<td bgcolor='#FFFFFF'>\n<center>";
 
-    $scripts = array(
-        'Domains'    => array( "domains", "domainform" ),
-        'Accounts'   => array( "accounts", "accountform" ),
-        'Aliases'    => array( "aliases", "aliasform" ),
-        'Maillists'  => array( "maillists", "maillistform" ),
-        'Service'    => array( "service" )
-    );
+    $scripts = [ 
+        'Domains'    => [ "domains", "domainform" ],
+        'Accounts'   => [ "accounts", "accountform" ],
+        'Aliases'    => [ "aliases", "aliasform" ],
+        'Maillists'  => [ "maillists", "maillistform" ],
+        'Service'    => [ "service" ]
+    ];
 
     if ( $_SESSION['USER'] == ADMIN_USER ) $scripts['Admins'] = [ "admins", "adminform" ];
 
     $scripts['Logout'] = [ "logout" ];
 
-    foreach( $scripts as $cur_item =>$scripts_list  ) {	
+    foreach( $scripts as $cur_item => $scripts_list  ) {	
         $css_class = "button";
         if ( in_array( $_GET['m'], $scripts_list ) ) $css_class .= "_sel";
-        print "&nbsp;<a class='".$css_class."' href='?admin&m=".$scripts_list[0]."'>".$cur_item."</a>&nbsp;\n";
+        print "&nbsp;<a class='${css_class}' href='?admin&m=${scripts_list[0]}'>${cur_item}</a>&nbsp;\n";
     }
 
     print "</center>\n</td></tr></table>\n";
   }
 
   function dotline( $colspan )  {
-
-    print '<tr><td colspan='.$colspan.' background="'.IMAGES_URL.'/dotline.gif" height=1>';
+    print '<tr><td colspan='.intval($colspan).' background="'.IMAGES_URL.'/dotline.gif" height=1>';
     print '<img src="'.IMAGES_URL.'/x.gif" width=1 height=1></td></tr>'."\n";
   }
 
@@ -75,8 +65,8 @@
     global $order_by;
 
     print '<th '.( $order_by == $field_name ? ' class=selected' : '' );
-    print '><a href="?admin&m='.$_GET['m'].'&order_by='.$field_name.'" title="'.$title.'">&nbsp;';
-    print $th_header."&nbsp;</a></th>\n";
+    print '><a href="?admin&m='.htmlspecialchars($_GET['m']).'&order_by='.htmlspecialchars($field_name).'" title="'.htmlspecialchars($title).'">&nbsp;';
+    print htmlspecialchars($th_header)."&nbsp;</a></th>\n";
   }
 
   // This function prints table's row with 2 columns in it.
@@ -85,9 +75,9 @@
 
   function html_input_text( $field_name, $desc, $value = '', $desc_suffix = '', $size = 15 ) {
 
-    print '<tr><td>&nbsp; '.$desc.' &nbsp;</td>'."\n";
-    print '<td><input type="text" name="'.$field_name.'" value="'.$value.'"';
-    print ( $size ? ' size='.$size : '' ).'>'.( $desc_suffix != '' ? $desc_suffix.' &nbsp;' : '' ).'</td>';
+    print '<tr><td>&nbsp; '.htmlspecialchars($desc).' &nbsp;</td>'."\n";
+    print '<td><input type="text" name="'.htmlspecialchars($field_name).'" value="'.htmlspecialchars($value).'"';
+    print ( $size ? ' size='.intval($size) : '' ).'>'.( $desc_suffix ? htmlspecialchars($desc_suffix).' &nbsp;' : '' ).'</td>';
     print "</tr>\n";
   }
 
@@ -102,38 +92,34 @@
     print "</table>\n";
   }
 
-  function print_errors( $errors ) {
+  function print_errors( $errors = [] ) {
 
+    if ( !is_array($errors) ) $errors = [ $errors ];
     print '<font face=courier color=red><b>';
-    reset( $errors );
-    while ( $val = current( $errors ) ) {
-        print $val."<br />\n";
-        next( $errors );
-    }
+    foreach ($errors as $error) print "${error}<br />\n"; 
     print "</b></font>\n";
   }
 
   function print_domain_selection( $domain_id ) {
 
     $domain_id = intval($domain_id);
-    $query = 'SELECT * FROM cyrup_domains '.rights2sql(1).' ORDER BY domain';
+    $query = 'SELECT * FROM cyrup_domains WHERE '.rights2sql().' ORDER BY domain';
     sql_query( $query );
-    print '<form action="".BASE_URL."/?admin&m='.$_GET['m'].'" method="POST">'."\n";
+    print '<form action="?admin&m='.htmlspecialchars($_GET['m']).'" method="POST">'."\n";
     print '<select name="domain_id" OnChange="submit();">'."\n";
     print '<option value=0>--- Select domain here ---</option>'."\n";
 
-    $domain_row = FALSE;
     while ( $row = sql_fetch_array() ) {
-        print '<option value="'.intval($row['id']).'"';
+        print '<option value='.intval($row['id']);
         if ( $row['id'] == $domain_id ) {
             print ' selected';
-            $domain_row = TRUE;
+            $domain_info = true;
         }
-        print '>'.$row['domain']."</option>\n";
+        print '>'.htmlspecialchars($row['domain'])."</option>\n";
     }
     print '</select><input type=submit value="Go">';
 
-    if ( ($domain_id) AND ($domain_row) ) {
+    if ( $domain_id && !empty($domain_info) ) {
         $domain_row = get_domain_info($domain_id);
         print '&nbsp;&nbsp;';
         print '<b>Quota:</b> '.kb2mb( $domain_row['quota_cur'] ).'/'.kb2mb( $domain_row['quota'] );
@@ -162,14 +148,11 @@
   }
 
   function kb2mb( $value ) {
-
-    return number_format( $value / 1024, 2, '.', '' );
+    return number_format( intval($value) / 1024, 2, '.', '' );
   }
 
   function percents( $part, $full = 0 ) {
-
     $rval = ( empty($full) ? $rval = 'n/a' : intval( $part / $full * 100 ).'%' );
-    return ( ($full AND ($part >= $full)) ? '<font color=red>'.$rval.'</font>' : $rval);
+    return ( ($full && ($part >= $full)) ? "<font color=red>${rval}</font>" : $rval);
   }
 
-?>

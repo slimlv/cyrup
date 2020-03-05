@@ -31,12 +31,11 @@
         return $ids;
     }
 
-  function rights2sql( $put_where = 0 , $sql_field = "id" ) {
-    DEBUG( D_FUNCTION, "rights2sql($put_where,$sql_field)" );
-    $out = ''; 
-    if ( $_SESSION['USER'] != ADMIN_USER ) {
-      $out = $put_where ? ' WHERE ' : ' AND ';
-      $out .= trim($_SESSION['RIGHTS']) == "" ? ' null ' : $sql_field.' IN ('.$_SESSION['RIGHTS'].') '; 
+  function rights2sql( $sql_field = "id" ) {
+    DEBUG( D_FUNCTION, "rights2sql($sql_field)" );
+    $out = ' TRUE '; 
+    if ( $_SESSION['USER'] != ADMIN_USER && !empty(trim($_SESSION['RIGHTS'])) ) {
+      $out =  "${sql_field} IN (${_SESSION['RIGHTS']} "; 
     }
     return $out;
   }
@@ -67,70 +66,63 @@
     return sql_escape($password);
   }
 
-    function get_mailbox_local_part( $domain_row, $account ) {
-
-        switch ( MAILBOX_STYLE ) {
-        case "USERSUFFIX" :
-            if ( preg_match( "/^(.+)".$domain_row["account_suffix"]."$/", $account, $matches ) )
-                return $matches[1];
-            else
-                return $account;
-        case "USER@DOMAIN.TLD" :
-            if ( $domain_row['domain'] == DEFAULT_DOMAIN )
-                return $account;
-            else
-                return substr( $account, 0, strpos( $account, "@" ) );
-        }
+  function get_mailbox_local_part( $domain_row, $account ) {
+    DEBUG( D_FUNCTION, "get_mailbox_local_part(\$domain_row,$account)" );
+    $out = false;
+    if ( MAILBOX_STYLE == "USERSUFFIX" ) {
+      $out = ( preg_match("/^(.+)".$domain_row["account_suffix"]."$/", $account, $m) ? $m[1] : $account );
+    } elseif ( MAILBOX_STYLE == "USER@DOMAIN.TLD" ) {
+      # FIXME handle local@local@domain.tld
+      $out = ( $domain_row['domain'] == DEFAULT_DOMAIN ? $account : substr($account, 0, strpos($account, '@')) );
+    } else {
+      die('MAILBOX_STYLE is unknown: '.MAILBOX_STYLE);
     }
+    return $out;
+  }
 
-    function get_mailbox_suffix( $domain_row ) {
-
-        switch ( MAILBOX_STYLE ) {
-        case "USERSUFFIX" :
-            return $domain_row['account_suffix'];
-        case "USER@DOMAIN.TLD" :
-            if ( $domain_row['domain'] == DEFAULT_DOMAIN )
-                return '';
-            else
-                return "@".$domain_row['domain'];
-        }
+  function get_mailbox_suffix( $domain_row ) {
+    DEBUG( D_FUNCTION, "get_mailbox_suffix(\$domain_row)" );
+    $out = false;
+    if ( MAILBOX_STYLE == "USERSUFFIX" ) {
+      $out = $domain_row['account_suffix'];
+    } elseif ( MAILBOX_STYLE == "USER@DOMAIN.TLD" ) {
+      $out = ( $domain_row['domain'] == DEFAULT_DOMAIN ? '' : "@${domain_row['domain']}" );
+    } else {
+      die('MAILBOX_STYLE is unknown: '.MAILBOX_STYLE);
     }
+  }
 
-    function get_mailbox( $username, $domain ) {
+  function get_mailbox( $username, $domain ) {
+    DEBUG( D_FUNCTION, "get_mailbox($username,$domain)" );
+    return $username.get_mailbox_suffix($domain);
+  }
 
-        return $username.get_mailbox_suffix( $domain );
+  function get_alias_local( $email ) {
+    DEBUG( D_FUNCTION, "get_alias_local($email)" );
+    return substr( $email, 0, strpos($email, "@") );
+  }
+
+  function get_domain_id() {
+    DEBUG( D_FUNCTION, "get_domain_id()" );
+
+    sql_query( "SELECT id FROM cyrup_domains WHERE ".rights2sql() );
+    if ( 0 == sql_num_rows() ) return 0;
+    if ( 1 == sql_num_rows() ) return $_SESSION['domain_id'] = intval(sql_fetch_variable());
+    if ( !empty($_POST['domain_id']) && !isset($_POST['action']) ) {
+      sql_query( "SELECT id FROM cyrup_domains WHERE id=".intval($_POST['domain_id'])." AND ".rights2sql() );
+      if ( 1 == sql_num_rows() ) return $_SESSION['domain_id'] = intval($_POST['domain_id']);
     }
-
-    function get_alias_local( $string ) {
-        return substr( $string, 0, strpos($string, "@") );
+    if ( !empty($_SESSION['domain_id']) ) {
+      sql_query( "SELECT id FROM cyrup_domains WHERE id=${_SESSION['domain_id']} AND ".rights2sql() );
+      if ( 1 == sql_num_rows() ) return $_SESSION['domain_id'];
     }
-
-
-    function get_domain_id() {
-
-        sql_query( "SELECT id FROM cyrup_domains".rights2sql(1) );
-        if ( 0 == sql_num_rows() )
-            return 0;
-        if ( 1 == sql_num_rows() ) {
-            $row = sql_fetch_array();
-            return $_SESSION['domain_id'] = $row[0];
-        }
-        if ( (!empty($_POST['domain_id'])) AND (!isset($_POST['action'])) ) {
-            sql_query( "SELECT id FROM cyrup_domains WHERE id=".intval($_POST['domain_id']).rights2sql() );
-            if ( 1 == sql_num_rows() )
-                return $_SESSION['domain_id'] = intval($_POST['domain_id']);
-        }
-        if ( !empty($_SESSION['domain_id']) ) {
-            sql_query( "SELECT id FROM cyrup_domains WHERE id=".$_SESSION['domain_id'].rights2sql() );
-            if ( 1 == sql_num_rows() )
-                return $_SESSION['domain_id'];
-        }
-        return $_SESSION['domain_id'] = 0;
-    }
+    return $_SESSION['domain_id'] = 0;
+  }
 
   function get_domain_owner( $domain_id ) {
+    DEBUG( D_FUNCTION, "get_domain_owner($domain_id)" );
     $domain_id = intval($domain_id);
-    sql_query( "SELECT id, rights FROM cyrup_admins WHERE rights like '%$domain_id%'" );
+    sql_query( "SELECT id, rights FROM cyrup_admins WHERE rights like '%${domain_id}%'" );
     while ( $row = sql_fetch_array() ) {
       $rights = explode( ",", $row['rights'] );
       if ( in_array($domain_id, $rights) ) return $row['id'];
@@ -138,11 +130,11 @@
     return false;
   }
 
-   /*
-    *  get_domain_info()
-    *  returns hash: all columns of cyrup_domains table +
-    *      default_rcpt, aliases_cur, accounts_cur, quota_cur
-    */
+  /*
+   *  get_domain_info()
+   *  returns hash: all columns of cyrup_domains table +
+   *      default_rcpt, aliases_cur, accounts_cur, quota_cur
+  */
   function get_domain_info( $domain_id ) {
     DEBUG( D_FUNCTION, "get_domain_info($domain_id)" );
     $domain_id = intval($domain_id);
@@ -184,77 +176,69 @@
   }
     
   function print_maillist_list( $alias_id ) {
+    DEBUG( D_FUNCTION, "print_maillist_list($alias_id)" );
 	
-    $alias_id = intval( $alias_id );
+    $alias_id = intval($alias_id);
     $domain_id = get_domain_id();
     if ( !$alias_id ) return false;
 
-    sql_query( "SELECT alias FROM cyrup_aliases WHERE domain_id='".$domain_id."' AND id='".$alias_id ."'" );
+    sql_query( "SELECT alias FROM cyrup_aliases WHERE domain_id=${domain_id} AND id=".$alias_id );
     if ( 1 != sql_num_rows() ) return false;
 
     $row = sql_fetch_array();
     $alias = $row['alias'];
-    sql_query( "SELECT * FROM cyrup_maillists
-                          WHERE domain_id='".$domain_id."'
-                                AND aliased_to LIKE '%".$alias."%' ORDER BY alias" );
+    sql_query( "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} AND aliased_to LIKE ".sql_escape("%${alias}%")." ORDER BY alias" );
     while ( $row = sql_fetch_array() ) {
       $aliased_to = explode( ",", $row['aliased_to'] );
-      if ( in_array($alias,$aliased_to) ) 
-        print "<a href='?admin&m=maillistform&id=".$row['id']."'>
-              &nbsp;".$row['alias'].'</a> '.
-              ( $row['enabled'] ? '(active)' : '(not active)' )."<br>\n";
+      if ( in_array($alias,$aliased_to) ) {
+        print "<a href='?admin&m=maillistform&id=${row['id']}'>&nbsp;${row['alias']}</a> ".( $row['enabled'] ? '(active)' : '(inactive)' )."<br>\n";
+      }
     }
   }
 
   function remove_from_maillist( $alias_id ) {
+    DEBUG( D_FUNCTION, "remove_from_maillist($alias_id)" );
 	
     $alias_id = intval( $alias_id );
     if ( !$alias_id ) return false;
+    $domain_id = get_domain_id();
+    if ( !$domain_id ) return false;
 
-    sql_query( "SELECT alias FROM cyrup_aliases WHERE domain_id='".get_domain_id()."' 
-                                                      AND id='".$alias_id ."'" );
+    sql_query( "SELECT alias FROM cyrup_aliases WHERE domain_id=${domain_id} AND id=".$alias_id );
     if ( 1 != sql_num_rows() ) return false;
-
     $alias = sql_fetch_variable();
 
-    sql_query( "DELETE FROM cyrup_maillists WHERE domain_id='".get_domain_id()."'
-                                                        AND aliased_to='".$alias."'" );
+    sql_query( "DELETE FROM cyrup_maillists WHERE domain_id=${domain_id} AND aliased_to = ".sql_escape($alias) );
 
-    $result = sql_query( "SELECT * FROM cyrup_maillists WHERE domain_id='".get_domain_id()."'
-                                                        AND aliased_to LIKE '%".$alias."%'" );
+    sql_query( "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} AND aliased_to LIKE ".sql_escape("%${alias}%") );
     while ( $row = sql_fetch_array($result) ) {
       $aliased_to = explode( ",", $row['aliased_to'] );
       if ( in_array($alias,$aliased_to) ) {
         array_splice( $aliased_to, array_search($alias,$aliased_to), 1 );
-        sql_query( "UPDATE cyrup_maillists SET aliased_to='".implode(",",$aliased_to)."' 
-                            WHERE domain_id='".get_domain_id()."'
-                                  AND id='".$row['id']."'" );
+        sql_query( "UPDATE cyrup_maillists SET aliased_to=".sql_escape(implode(",",$aliased_to))." WHERE domain_id=${domain_id} AND id=".$row['id'] );
       }
     }
     return true;
-	
   }
 
-    function DEBUG( $level, $message = "" ) {
-        if ( ! ( $level & DEBUG_LEVEL ) )
-            return 0;
-        switch ( $level ) {
-        case D_INCLUDE :
-            $head = "<font color='green'>INCLUDE</font>";
-            break;
-        case D_FUNCTION :
-            $head = "<font color='blue'>FUNCTION</font>";
-            break;
-        case D_SQL_ERROR :
-            $head = "<font color='orange'>SQL</font>";
-            break;
-        case D_IMAP_ERROR :
-            $head = "<font color='orange'>IMAP</font>";
-            break;
-        }
-        print "$head: $message<br>\n";
+  function DEBUG( $level, $message = "" ) {
+    if ( !($level & DEBUG_LEVEL) ) return false;
+    switch ( $level ) {
+      case D_INCLUDE :
+        $head = "<font color='green'>INCLUDE</font>";
+        break;
+      case D_FUNCTION :
+        $head = "<font color='blue'>FUNCTION</font>";
+        break;
+      case D_SQL_ERROR :
+        $head = "<font color='orange'>SQL</font>";
+        break;
+      case D_IMAP_ERROR :
+        $head = "<font color='orange'>IMAP</font>";
+        break;
     }
-
+    print "${head}: ${message}<br>\n";
+  }
 
   function mksysaliases($file) {
     DEBUG( D_FUNCTION, "mksysaliases($file)" );

@@ -1,6 +1,6 @@
 <?php
 
-    if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
+    defined("INCLUDE_DIR") || exit("Not for direct run");
     DEBUG( D_INCLUDE, "sql.inc.php" );
 
     $GLOBALS['sql_last_result'] = null;

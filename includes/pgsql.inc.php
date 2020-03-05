@@ -1,17 +1,9 @@
 <?php
-/*
- * $RCSfile: pgsql.inc.php,v $ $Revision: 1.3 $
- * $Author: slim_lv $ $Date: 2007/05/13 17:29:26 $
- * This file is part of CYRUP project
- * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- * Thanks for postgresql code goes to Brett Van Sprewenburg <brett(at)ataxxia.com>
- */
 
-    if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
+    defined("INCLUDE_DIR") || exit("Not for direct run");
 
     DEBUG( D_INCLUDE, "pgsql.inc.php" );
 
-// definejam mainigo un pieskiram vertibu NULL
     $GLOBALS['sql_last_result'] = null;
     $GLOBALS['dbconn'] = "";
 

@@ -1,17 +1,18 @@
 <?php
 
-    if ( !defined("INCLUDE_DIR") ) exit("Not for direct run"); 
-    if ( $_SESSION['USER'] != ADMIN_USER ) {
-	header( "Location: ".BASE_URL."?admin" );
-	exit;
-    }
+  defined("INCLUDE_DIR") || exit("Not for direct run"); 
+  if ( $_SESSION['USER'] != ADMIN_USER ) {
+    header( "Location: ".BASE_URL."?admin" );
+    exit;
+  }
 
-    $errors = [];
-    // use in form later
-    $info = !empty($_POST['info']) ? trim($_POST['info']) : '';
-    $username = !empty($_POST['username']) ? strtolower(trim($_POST['username'])) : '';
+  $errors = [];
 
-    if ( !empty($_POST['action']) ) {
+  // use in form later
+  $info = !empty($_POST['info']) ? trim($_POST['info']) : '';
+  $username = !empty($_POST['username']) ? strtolower(trim($_POST['username'])) : '';
+
+  if ( !empty($_POST['action']) ) {
 
        if ( !empty($_POST['id']) && $_POST['id'] == intval($_POST['id']) ) {
 	    sql_query( "SELECT * FROM cyrup_admins WHERE id=".$_POST['id']." AND username=".sql_escape($username) );
@@ -62,88 +63,85 @@
 	    header( "Location: ".BASE_URL."?admin&m=admins" );
 	    exit;
 	}
-    }
+  }
 
-    print_header(VERSION.": Admins form");
-    print_top_menu();
-    print "<script type=\"text/javascript\" src='".JS_URL."/functions.js' language=\"JavaScript\"></script>\n";
+  print_header(VERSION.": Admins form");
+  print_top_menu();
+  print "<script type='text/javascript' src='".JS_URL."/functions.js' language='JavaScript'></script>\n";
 
-    if ( !empty($_GET['id']) && $_GET['id'] == intval($_GET['id']) ) {
-	sql_query( "SELECT * FROM cyrup_admins WHERE id=".$_GET['id']);
-	if ( $row = sql_fetch_array() ) {
-	    $admin_id = $row['id'];
-	}
-    }
+  if ( !empty($_GET['id']) && $_GET['id'] == intval($_GET['id']) ) {
+    sql_query( "SELECT * FROM cyrup_admins WHERE id=".$_GET['id']);
+    if ( $row = sql_fetch_array() ) $admin_id = $row['id'];
+  }
 
-    print "<center>\n";
-    print "<form action='".BASE_URL."?admin&m=adminform".(isset($admin_id)?"&id=".$admin_id:"");
-    print "' name=form method=POST onSubmit='javascript:document.form.account.disabled=false;'>\n";
-    print "<input type=hidden name='action' value='action'>\n";
+  print "<center>\n";
+  print "<form action='?admin&m=adminform".(isset($admin_id)?"&id=".$admin_id:"");
+  print "' name=form method=POST onSubmit='javascript:document.form.account.disabled=false;'>\n";
+  print "<input type=hidden name='action' value='action'>\n";
 
-    if ( isset( $admin_id ) ) {
-        print "<input type=hidden name=id value='".$admin_id."'>\n";
-	print "<input type=hidden name=username value='".$row['username']."'>\n";
-    } else {
-	$row['username'] = $username;
-	$row['info'] = $info;
-	$row['password'] = "";
-    }
+  if ( isset( $admin_id ) ) {
+    print "<input type=hidden name=id value='".$admin_id."'>\n";
+    print "<input type=hidden name=username value='".$row['username']."'>\n";
+  } else {
+    $row['username'] = $username;
+    $row['info'] = $info;
+    $row['password'] = "";
+  }
 
-    print "<table align=center border=0 cellpadding=0 cellspacing=0>\n";
-    dotline( 2 );
-    print "<tr class=highlight>\n<td colspan=2 align=center>";
-    print (isset($admin_id) ? "<b>Edit the Admin's Profile</b>" : "<b>Add admin</b>"); 
-    print "</td></tr>\n";
-    dotline( 2 );
-    print "<tr>\n<td>&nbsp; Admin's name &nbsp;</td>\n<td>\n";
-    print isset($admin_id) ? htmlspecialchars($row['username']) : "<input type=text name=username size=15";
-    print "</td>\n</tr>\n";
-    dotline( 2 );
-    print "<tr>\n<td>&nbsp; Password ".(SHOW_PASSWORD ? "":"(twice)")."&nbsp;</td>\n<td>";
-    if ( SHOW_PASSWORD ) {
-	print "<input type='text' name='password_a' size=10 value='".htmlspecialchars($row['password'])."'>";
-	print "<input type='hidden' name='password_retype'>";
-    } else {
-	print "<input type='password' name='password_a' size=10><br>\n";
-	print "<input type='password' name='password_retype' size=10>&nbsp;";
-        print ( isset( $admin_id ) ? "(Leave empty if no change) " : "" );
-    }
-    print "</td>\n</tr>\n";
-    dotline( 2 ); 
-    print "<tr>\n<td>&nbsp; Info &nbsp;</td>\n<td>";
-    print "<textarea name='info' cols='24' rows='4'>".htmlspecialchars($row['info'])."</textarea></td>\n";
-    print "</tr>\n";
-    dotline( 2 );
-    print "<tr>\n<td>&nbsp; Owned domains &nbsp;</td>\n<td>";
-    if ( isset($admin_id) && $row['username'] == ADMIN_USER ) {
-      print "<a href='?admin&m=domains'>all domains</a>";
-    } else {
-      $result = sql_query( "SELECT id,domain FROM cyrup_domains ORDER BY domain" );
-      $i = 0;
-      while ( $row_dom = sql_fetch_array($result) ) {
-	    $i++;
-	    print "<input type=hidden name='ids[".$i."]' value='".$row_dom['id']."'>\n";
-	    print "<input type=checkbox name='chks[".$i."]' ";
-	    if ( $owner = get_domain_owner($row_dom['id']) ) {
-		print (isset($admin_id) && $owner == $admin_id ? 'checked' : "disabled"); 
-	    }
-	    print ">\n<a href='?admin&m=domainform&id=".$row_dom['id']."'>";
-	    print $row_dom['domain']."</a><br />\n";
+  print "<table align=center border=0 cellpadding=0 cellspacing=0>\n";
+  dotline( 2 );
+  print "<tr class=highlight>\n<td colspan=2 align=center>";
+  print (isset($admin_id) ? "<b>Edit the Admin's Profile</b>" : "<b>Add admin</b>"); 
+  print "</td></tr>\n";
+  dotline( 2 );
+  print "<tr>\n<td>&nbsp; Admin's name &nbsp;</td>\n<td>\n";
+  print isset($admin_id) ? htmlspecialchars($row['username']) : "<input type=text name=username size=15";
+  print "</td>\n</tr>\n";
+  dotline( 2 );
+  print "<tr>\n<td>&nbsp; Password ".(SHOW_PASSWORD ? "":"(twice)")."&nbsp;</td>\n<td>";
+  if ( SHOW_PASSWORD ) {
+    print "<input type='text' name='password_a' size=10 value='".htmlspecialchars($row['password'])."'>";
+    print "<input type='hidden' name='password_retype'>";
+  } else {
+    print "<input type='password' name='password_a' size=10><br>\n";
+    print "<input type='password' name='password_retype' size=10>&nbsp;";
+    print ( isset( $admin_id ) ? "(Leave empty if no change) " : "" );
+  }
+  print "</td>\n</tr>\n";
+  dotline( 2 ); 
+  print "<tr>\n<td>&nbsp; Info &nbsp;</td>\n<td>";
+  print "<textarea name='info' cols='24' rows='4'>".htmlspecialchars($row['info'])."</textarea></td>\n";
+  print "</tr>\n";
+  dotline( 2 );
+  print "<tr>\n<td>&nbsp; Owned domains &nbsp;</td>\n<td>";
+  if ( isset($admin_id) && $row['username'] == ADMIN_USER ) {
+    print "<a href='?admin&m=domains'>all domains</a>";
+  } else {
+    $result = sql_query( "SELECT id,domain FROM cyrup_domains ORDER BY domain" );
+    $i = 0;
+    while ( $row_dom = sql_fetch_array($result) ) {
+      $i++;
+      print "<input type=hidden name='ids[".$i."]' value='".$row_dom['id']."'>\n";
+      print "<input type=checkbox name='chks[".$i."]' ";
+      if ( $owner = get_domain_owner($row_dom['id']) ) {
+        print (isset($admin_id) && $owner == $admin_id ? 'checked' : "disabled"); 
       }
+      print ">\n<a href='?admin&m=domainform&id=${row_dom['id']}'>${row_dom['domain']}</a><br />\n";
     }
-    dotline( 2 );
-    if ( !empty($errors) ) {
-        print "<tr class=highlight><td colspan=2 align=center>";
-        print_errors( $errors ); 
-        print "</tr>";
-        dotline( 2 ); 
-    }
-    print "<tr>\n<td>&nbsp;</td>\n<td>";
-    print "<input type='submit' value='".(isset($admin_id) ? 'Update' : 'Add new' )."'>"; 
-    print "</td>\n</tr>\n</table>\n</form><br />\n";
-    print "<form name='generator'>\nGenerate password:";
-    print "<input type='text' name='password' size='12'>\n";
-    print "<input type=button value='Generate' onClick='document.forms[1].password.value=getPassword(8,\"\",true,true,true,false,true,true,true,false);'>";
-    print "</form>\n";
-    print_footer();
+  }
+  dotline( 2 );
+  if ( $errors ) {
+    print "<tr class=highlight><td colspan=2 align=center>";
+    print_errors( $errors ); 
+    print "</tr>";
+    dotline( 2 ); 
+  }
+  print "<tr>\n<td>&nbsp;</td>\n<td>";
+  print "<input type='submit' value='".(isset($admin_id) ? 'Update' : 'Add new' )."'>"; 
+  print "</td>\n</tr>\n</table>\n</form><br />\n";
+  print "<form name='generator'>\nGenerate password:";
+  print "<input type='text' name='password' size='12'>\n";
+  print "<input type=button value='Generate' onClick='document.forms[1].password.value=getPassword(8,\"\",true,true,true,false,true,true,true,false);'>";
+  print "</form>\n";
+  print_footer();
 

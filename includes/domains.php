@@ -62,7 +62,7 @@
     print "</td></tr>\n";
     dotline( $colspan );
 
-    $query = "SELECT id FROM cyrup_domains a LEFT JOIN cyrup_default_rcpt b ON a.id=b.domain_id ".rights2sql(1,"a.id")." ORDER BY ".$order_by;
+    $query = "SELECT id FROM cyrup_domains a LEFT JOIN cyrup_default_rcpt b ON a.id=b.domain_id WHERE ".rights2sql('a.id')." ORDER BY ".$order_by;
     $domains_res = sql_query( $query );
     $i = 0;
     while ( $row = sql_fetch_array( $domains_res ) ) {
