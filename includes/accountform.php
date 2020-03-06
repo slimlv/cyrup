@@ -1,17 +1,17 @@
 <?php
 
-    if ( !defined('INCLUDE_DIR') ) exit('Not for direct run'); 
-    if (!isset($_SESSION['domain_id'])){
-        header( "Location: ".BASE_URL."?admin" );
-        exit;
-    }
+  defined('INCLUDE_DIR') || exit('Not for direct run'); 
+  if (!isset($_SESSION['domain_id'])){
+    header( "Location: ".BASE_URL."?admin" );
+    exit;
+  }
 
-    require_once( INCLUDE_DIR.'/imap.inc.php' );
-    require_once( INCLUDE_DIR.'/sieve.inc.php' );
+  require_once( INCLUDE_DIR.'/imap.inc.php' );
+  require_once( INCLUDE_DIR.'/sieve.inc.php' );
 
-    $domain_id = intval($_SESSION['domain_id']);
-    $domain_row = get_domain_info( $domain_id );
-    $errors = [];
+  $domain_id = intval($_SESSION['domain_id']);
+  $domain_row = get_domain_info( $domain_id );
+  $errors = [];
 
     if ( isset($_POST['action']) ) {
 

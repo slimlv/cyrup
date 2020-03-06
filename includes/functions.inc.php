@@ -90,11 +90,12 @@
     } else {
       die('MAILBOX_STYLE is unknown: '.MAILBOX_STYLE);
     }
+    return $out;
   }
 
-  function get_mailbox( $username, $domain ) {
-    DEBUG( D_FUNCTION, "get_mailbox($username,$domain)" );
-    return $username.get_mailbox_suffix($domain);
+  function get_mailbox( $username, $domain_row ) {
+    DEBUG( D_FUNCTION, "get_mailbox($username,\$domain_row)" );
+    return $username.get_mailbox_suffix($domain_row);
   }
 
   function get_alias_local( $email ) {
@@ -211,7 +212,7 @@
     sql_query( "DELETE FROM cyrup_maillists WHERE domain_id=${domain_id} AND aliased_to = ".sql_escape($alias) );
 
     sql_query( "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} AND aliased_to LIKE ".sql_escape("%${alias}%") );
-    while ( $row = sql_fetch_array($result) ) {
+    while ( $row = sql_fetch_array() ) {
       $aliased_to = explode( ",", $row['aliased_to'] );
       if ( in_array($alias,$aliased_to) ) {
         array_splice( $aliased_to, array_search($alias,$aliased_to), 1 );
