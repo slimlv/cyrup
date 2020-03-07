@@ -103,36 +103,14 @@
         return $stmt->fetch();
     }
 
-     // Can be used for caching. Usage: sql_export( $query, $filename );
-    function sql_export( $query, $filename ) {
-        global $dbconn;
-        global $sql_last_result;
-        DEBUG( D_FUNCTION, "sql_export('$query','$filename')" );
+    function sql_field_names() {
+        DEBUG( D_FUNCTION, "sql_field_names()" );
+        $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
+        $out = [];
 
-        $S_NEWLINE = "\n";   // New line
-        $S_COMMENT = "#";    // Comment sign
-        $S_DELIMITER = "\t"; // Fields delimiter
-
-        if ( ( $fh = fopen( $filename, "w" ) ) === FALSE ) sql_die( "sql_export(): Permission denied" );
- 
-        $result = sql_query( $query );
-        $f_count = $result->columnCount();
-        fwrite( $fh, $S_COMMENT." " ); // Comment sign
-        for ( $i = 0; $i < $f_count; $i++ ) fwrite( $fh, $result->getColumnMeta( $i )["name"].$S_DELIMITER ); 
-        fwrite( $fh, $S_NEWLINE );
- 
-        while ( $row = sql_fetch_array( $result ) ) {
-            foreach ($row as $k => $v) {
-                fwrite( $fh, str_replace(
-                    [ "\\",   $S_COMMENT,      $S_NEWLINE, $S_DELIMITER ],
-                    [ "\\\\", "\\".$S_COMMENT, "\\n",      "\\t" ],
-                    $v ).$S_DELIMITER );
-            }
-            fwrite( $fh, $S_NEWLINE );
-        }
- 
-        fclose( $fh );
-        return $result;
+        $count = $result->columnCount();
+        for ($i = 0; $i < $count; $i++) $out[$i] = $result->getColumnMeta($i)["name"];
+        return $out;
     }
 
     function sql_close() {

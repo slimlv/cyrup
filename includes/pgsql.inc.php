@@ -42,7 +42,7 @@
     }
 
     function sql_insert_id( $tablename , $fieldname ) {
-        DEBUG( D_FUNCTION, "sql_insert_id()" );
+        DEBUG( D_FUNCTION, "sql_insert_id($tablename , $fieldname)" );
 	$seq_name = "${tablename}_${fieldname}_seq";
 	$cval = pg_fetch_row( pg_query( "SELECT currval('".$seq_name."')" ) );
         return $cval[0];
@@ -62,47 +62,24 @@
         return $arr[0];
     }
 
+    function sql_field_names() {
+        DEBUG( D_FUNCTION, "sql_field_names()" );
+        $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
+        $out = [];
+
+        $count = pg_num_fields( $result );
+        for ($i = 0; $i < $count; $i++) $out[$i] = pg_field_name($result, $i);
+        return $out;
+    }
+
     function sql_fetch_row() {
-        DEBUG( D_FUNCTION, "sql_fetch_row(...)" );
+        DEBUG( D_FUNCTION, "sql_fetch_row()" );
         $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
         return pg_fetch_row( $result ); 
     }
 
-     // Can be used for caching. Usage: sql_export( $query, $filename );
-    function sql_export( $query, $filename ) {
-
-        DEBUG( D_FUNCTION, "sql_export('$query','$filename')" );
-
-        $S_NEWLINE = "\n";   // New line
-        $S_COMMENT = '#';    // Comment sign
-        $S_DELIMITER = "\t"; // Fields delimiter
-
-
-        if ( ( $fh = fopen( $filename, "w" ) ) == FALSE ) sql_die( "sql_export(): Permission denied" );
-
-        $result = sql_query( $query );
-        $f_count = pg_num_fields( $result );
-	fwrite( $fh, $S_COMMENT." " ); // Comment sign
-        for ( $i = 0; $i < $f_count; $i++ ) fwrite( $fh, pg_field_name($result, $i). $S_DELIMITER);
-        fwrite( $fh, $S_NEWLINE );
-
-        while ( $row = sql_fetch_array( $result ) ) {
-             for ( $i = 0; $i < $f_count; $i++ ) {
-                 fwrite( $fh, str_replace(
-                     [ "\\",   $S_COMMENT,      $S_NEWLINE, $S_DELIMITER ],
-                     [ "\\\\", "\\".$S_COMMENT, "\\n",      "\\t" ],
-                     $row[$i] )
-                     .$S_DELIMITER );
-             }
-             fwrite( $fh, $S_NEWLINE );
-         }
-
-         fclose( $fh );
-         return pg_fetch_array($result);
-    }
-
     function sql_free_result() {
-        DEBUG( D_FUNCTION, "sql_free_result(...)" );
+        DEBUG( D_FUNCTION, "sql_free_result()" );
         $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
         return @pg_free_result($result) or sql_die( "pg_free_result(): Couldn't free result" );
     }

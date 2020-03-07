@@ -104,7 +104,7 @@
     dotline( 2 );
     html_input_text("alias","Alias (source)",get_alias_local($row['alias']),"@".$domain_row["domain"],20);
     dotline( 2 );
-    print "<tr>\n<td>&nbsp; Redirection to (destination) &nbsp;</td>\n<td>\n";
+    print "<tr>\n<td>&nbsp; Deliver to (destination) &nbsp;</td>\n<td>\n";
     print "<input type='radio' name='dest' value='email' onClick='javascript:switchInputField(0);'";
     print ( $row['account_id'] ? "" : " checked" ).">";
     print "&nbsp; Email: &nbsp;<input type='text' name='aliased_to' size='22' value='";

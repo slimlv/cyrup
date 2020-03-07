@@ -23,7 +23,7 @@
         $sel = chks2sql( 'id' );
         if ( !empty($sel) ) sql_query( 'DELETE FROM cyrup_domains WHERE '.$sel );
         if ( defined('DOMAIN_EXPORT_FILE') AND DOMAIN_EXPORT_FILE != '' )
-            sql_export( 'SELECT domain FROM cyrup_domains WHERE enabled=1' , DOMAIN_EXPORT_FILE );
+            export2file( 'SELECT domain FROM cyrup_domains WHERE enabled=1' , DOMAIN_EXPORT_FILE );
         if ( defined('SYSTEM_ALIASES') AND SYSTEM_ALIASES != '' ) 
             mksysaliases(SYSTEM_ALIASES);
     }

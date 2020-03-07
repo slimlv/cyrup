@@ -241,6 +241,31 @@
     print "${head}: ${message}<br>\n";
   }
 
+  function export2file( $query, $filename ) {
+    DEBUG( D_FUNCTION, "export2file('$query','$filename')" );
+
+    $NEWLINE = "\n";   // New line
+    $COMMENT = '#';    // Comment sign
+    $DELIMITER = "\t"; // Fields delimiter
+
+    if ( ( $fh = fopen( $filename, "w" ) ) == FALSE ) sql_die( "export2file(): Permission denied" );
+
+    $result = sql_query( $query );
+    fwrite( $fh, "${COMMENT} ".implode($DELIMITER, array_values(sql_field_names())).$NEWLINE  ); // Comment 
+    fwrite( $fh, $NEWLINE );
+
+    while ( $row = sql_fetch_array( $result ) ) {
+      foreach ($row as $field)
+        $line = strtr($field, [ "\\" => "\\\\", $COMMENT => "\\${COMMENT}", $NEWLINE => "\\n", $DELIMITER => "\\t" ]);
+        fwrite( $fh, $line.$DELIMITER );
+      }
+      fwrite( $fh, $NEWLINE );
+    }
+
+    fclose( $fh );
+    return sql_fetch_array($result);
+  }
+
   function mksysaliases($file) {
     DEBUG( D_FUNCTION, "mksysaliases($file)" );
 
