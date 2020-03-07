@@ -40,8 +40,8 @@
     return $out;
   }
 
-  function sql_pager($field) {
-    DEBUG( D_FUNCTION, "sql_pager($field)" );
+  function filter2sql($field) {
+    DEBUG( D_FUNCTION, "filter2sql($field)" );
     $out = ' ';
     if ( !empty($_GET['w']) && !empty($field) ) {
       $str = strtolower($_GET['w']);

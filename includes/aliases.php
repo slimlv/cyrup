@@ -36,7 +36,7 @@
         print "<a href='?admin&m=aliasform' class=button>[ Add new ]</a></td></tr>\n";
         dotline( 5 );
 
-        $query = "SELECT * FROM cyrup_aliases WHERE domain_id=".$domain_id." ".sql_pager('alias').' ORDER BY '.$order_by;
+        $query = "SELECT * FROM cyrup_aliases WHERE domain_id=".$domain_id." ".filter2sql('alias').' ORDER BY '.$order_by;
         sql_query($query);
         $i = 0;
         while ( $row = sql_fetch_array() ) {

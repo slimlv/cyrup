@@ -61,7 +61,7 @@
     # FIXME - subselect
     $query = "SELECT acc.*,count(ali.id) as aliases_cur FROM cyrup_accounts acc
                 LEFT JOIN cyrup_aliases ali ON acc.id=ali.account_id
-                WHERE acc.domain_id=${domain_id} ".sql_pager('acc.account').' 
+                WHERE acc.domain_id=${domain_id} ".filter2sql('acc.account').' 
                 GROUP BY acc.id, acc.account, acc.password, acc.domain_id, acc.quota, acc.first_name, acc.surname, acc.other_email, acc.info, acc.enabled, acc.phone
                 ORDER BY '.$order_by;
     

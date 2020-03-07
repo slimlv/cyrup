@@ -32,7 +32,7 @@
     print "<tr class=highlight><td colspan=5 align=center><a href='?admin&m=maillistform' class=button>[ Add new ]</a></td></tr>\n";
     dotline( 4 );
     
-    $query = "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} ".sql_pager('alias')." ORDER BY ${order_by}";
+    $query = "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} ".filter2sql('alias')." ORDER BY ${order_by}";
     sql_query($query);
 
     $i = 0;
