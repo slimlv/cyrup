@@ -89,12 +89,12 @@
       print "<td align=right>&nbsp;".htmlspecialchars($row['info'])."</td>\n";
       print "</tr>\n";
       dotline( 10 );
-   }
-   print "</table>\n";
-   if ( $i >= 1 ) {
-     print "<br><br>\n";
-     delete_selected_box(); 
-   }
-   print "</form>\n";
+    }
+    print "</table>\n";
+    if ( $i >= 1 ) {
+      print "<br><br>\n";
+      delete_selected_box(); 
+    }
+    print "</form>\n";
   }
   print_footer();

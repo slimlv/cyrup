@@ -19,7 +19,7 @@
 
 ?>
 <br /><br /><center>
-<form action='<?=BASE_URL?>?admin&m=service&chpass' method='POST'>
+<form action='?admin&m=service&chpass' method='POST'>
 <table width="0%" border=0 cellpadding=0 cellspacing=0>
 <?php dotline(2); ?>
 <tr class="highlight"><td colspan=2 align="center"><b>Change admin's password</b></tr>

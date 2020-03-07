@@ -20,7 +20,7 @@
     print_domain_selection( $domain_id );
 
     if ( $domain_id ) {
-        print "<form name=form method=POST action='".BASE_URL."?admin&m=aliases'>\n";
+        print "<form name=form method=POST action='?admin&m=aliases'>\n";
         print "<input type=hidden name=action value=''>\n";
         print "<table width='100%' border=0 cellpadding=0 cellspacing=0>\n";
         dotline( 5 );

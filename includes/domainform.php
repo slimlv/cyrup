@@ -131,7 +131,7 @@
     print_header( TITLE."Domain form" );
     print_top_menu();
 
-    print "<center><form action='".BASE_URL."?admin&m=domainform" .( isset($_GET['id']) ? "&id=".intval($_GET['id']) : "" )."' method='POST'>\n";
+    print "<center><form action='?admin&m=domainform" .( isset($_GET['id']) ? "&id=".intval($_GET['id']) : "" )."' method='POST'>\n";
     print "<input type=hidden name=action value='action'>\n";
 
     if ( isset( $_GET['id'] ) ) {

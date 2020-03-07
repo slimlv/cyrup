@@ -25,7 +25,7 @@
 ?>
 <br /><br /><br />
 <br /><br /><br />
-<form action='<?=BASE_URL?>?admin' method=POST>
+<form action='?admin' method=POST>
 <center>
 <img src='<?=IMAGES_URL?>/logo.gif'><br>
 <table align=center border=0 cellpadding=0 cellspacing=0>

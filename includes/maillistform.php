@@ -77,7 +77,7 @@
     print "<script type=\"text/javascript\" src='".JS_URL."/functions.js' language=\"JavaScript\"></script>\n";
     print "<script type=\"text/javascript\" src='".JS_URL."/checkemail.js' language=\"JavaScript\"></script>\n";
     print "<center>\n<form name=form ";
-    print "action='".BASE_URL."?admin&m=maillistform".(!empty($maillist_id)?"&id=${maillist_id}":"")."' method=POST>\n";
+    print "action='?admin&m=maillistform".(!empty($maillist_id)?"&id=${maillist_id}":"")."' method=POST>\n";
     print "<input type=hidden name=action>\n";
 
     if ( isset( $maillist_id ) ) {

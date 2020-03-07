@@ -20,7 +20,7 @@
 
 ?>
 <br /><br /><br /><br />
-<form action="<?=BASE_URL?>?chpass" method="POST">
+<form action="?chpass" method="POST">
 <center>
 <img src='<?=IMAGES_URL;?>/logo.gif'>
 <br /><br />

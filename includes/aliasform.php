@@ -78,9 +78,8 @@
 
     print_header( TITLE."Alias form" );
     print_top_menu();
-    print "<script type=\"text/javascript\" src=\"".JS_URL."/functions.js\" language=\"JavaScript\"></script>\n";
-    print "<center><form name=form method='POST' ";
-    print " action='".BASE_URL."/?admin&m=aliasform".(!empty($alias_id)?"&id=${alias_id}":"")."'>\n";
+    print "<script type='text/javascript' src='".JS_URL."/functions.js' language='JavaScript'></script>\n";
+    print "<center><form name=form method='POST' action='?admin&m=aliasform".(!empty($alias_id)?"&id=${alias_id}":"")."'>\n";
     print "<input type=hidden name=action>\n";
 
     if ( isset($alias_id) ) {
