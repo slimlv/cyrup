@@ -132,7 +132,8 @@
   } else {
     $account_row['quota'] = empty($_POST['quota_mb']) ? DEFAULT_QUOTA : intval($_POST['quota_mb']);
     $account_row['enabled'] = isset($enabled) ? $enabled : 1;
-    $account_row['password'] = "";
+    $account_row['account'] = '';
+    $account_row['password'] = '';
     foreach (['first_name','surname','phone','other_email','info'] as $key) {
       $account_row[$key] = empty($$key) ? '' : $$key;
     }

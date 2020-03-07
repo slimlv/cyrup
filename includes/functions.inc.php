@@ -252,10 +252,9 @@
 
     $result = sql_query( $query );
     fwrite( $fh, "${COMMENT} ".implode($DELIMITER, array_values(sql_field_names())).$NEWLINE  ); // Comment 
-    fwrite( $fh, $NEWLINE );
 
-    while ( $row = sql_fetch_array( $result ) ) {
-      foreach ($row as $field)
+    while ( $row = sql_fetch_row( $result ) ) {
+      foreach ($row as $field) {
         $line = strtr($field, [ "\\" => "\\\\", $COMMENT => "\\${COMMENT}", $NEWLINE => "\\n", $DELIMITER => "\\t" ]);
         fwrite( $fh, $line.$DELIMITER );
       }
