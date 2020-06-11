@@ -139,7 +139,7 @@
     $row['aliases_cur'] = sql_num_rows();
 
     sql_query( "SELECT COUNT(*) AS accounts_cur, SUM(quota) AS quota_cur FROM cyrup_accounts WHERE domain_id=".$domain_id );
-    list( $row['accounts_cur'], $row['quota_cur'] ) = sql_fetch_array();
+    list( $row['accounts_cur'], $row['quota_cur'] ) = sql_fetch_row();
 
     return $row;
   }

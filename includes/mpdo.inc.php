@@ -15,7 +15,8 @@
     }
 
     function sql_escape($str) {
-       return PDO::quote($str);
+       global $dbconn;
+       return $dbconn->quote($str);
     }
 
     function sql_connect( $database=SQL_DB, $username=SQL_USER, $password=SQL_PASS ) {
@@ -100,7 +101,7 @@
 
         $stmt = func_num_args() ? func_get_arg(0) : $sql_last_result;
 
-        return $stmt->fetch();
+        return $stmt->fetch(PDO::FETCH_NUM);
     }
 
     function sql_fetch_all() {

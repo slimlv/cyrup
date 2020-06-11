@@ -49,7 +49,7 @@
         $row = sql_fetch_array();
         $domain = $row['domain'];
         sql_query( "SELECT count(*),sum(quota) FROM cyrup_accounts WHERE domain_id=".$domain_id );
-        list( $accounts_cur, $quota_cur ) = sql_fetch_array();
+        list( $accounts_cur, $quota_cur ) = sql_fetch_row();
         sql_query( "SELECT count(*) FROM cyrup_aliases WHERE domain_id=".$domain_id );
         $aliases_cur = sql_fetch_variable();
         if ( $accounts_max && $accounts_cur > $accounts_max ) {
