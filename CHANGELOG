@@ -6,6 +6,8 @@
 20200611 <slim@inbox.lv>:
   new: count emails as alias
   cleanup: chks removed in favor of ids
+  bugfix: proper mpdo escape
+  bugfix: proper php list() usage
 
 20191023 <slim_lv@users.sourceforge.net>
   new: mysql pdo driver
