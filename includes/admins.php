@@ -34,8 +34,7 @@
   $i = 0;
   while ( $row = sql_fetch_array($result) ) {
     $i++;
-    print "<td width=1><input type=checkbox name='chks[${i}]'>";
-    print "<input type=hidden name='ids[${i}]' value='${row['id']}'></td>\n";
+    print "<td width=1><input type=checkbox name='ids[${row['id']}]' value='${row['id']}'></td>\n";
     print "<td>&nbsp;<a href='?admin&m=adminform&id=${row['id']}'>".htmlspecialchars($row['username'])."</a></td>\n";
 
     print "<td align=center>";

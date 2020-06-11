@@ -35,21 +35,18 @@
     $query = "SELECT * FROM cyrup_maillists WHERE domain_id=${domain_id} ".filter2sql('alias')." ORDER BY ${order_by}";
     sql_query($query);
 
-    $i = 0;
     while ( $row = sql_fetch_array() ) {
-            $i++;
             $aliased_to = explode( ",", $row['aliased_to'] );
             sort( $aliased_to );
-            print "<td width=1 valign='top'><input type=checkbox name='chks[".$i."]'>";
-            print "<input type=hidden name='ids[".$i."]' value='".$row['id']."'></td>\n";
+            print "<td width=1 valign='top'><input type=checkbox name='ids[{$row['id']}]' value='".$row['id']."'></td>\n";
             print "<td valign='top'>&nbsp;<a href='?admin&m=maillistform&id=".$row['id']."'>".$row['alias']."</a></td>\n";
             print "<td valign='top' align=center>&nbsp;".( $row['enabled'] == 1 ? "Y" : "N")."</td>\n";
             print "<td align=center>&nbsp;".implode( "<br>", $aliased_to )."</td>\n";
             print "</tr>\n";
             dotline( 4 );
-    }
+   }
     print "</table>\n";
-    if ( $i >= 1 ) {
+    if ( !empty($row) ) {
       print "<br><br>\n";
       delete_selected_box();
     }

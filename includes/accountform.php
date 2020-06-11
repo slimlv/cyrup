@@ -187,8 +187,8 @@
   dotline( 2 );
   if ( $account_id ) {
     print "<tr>\n<td>&nbsp; Aliases &nbsp;</td>\n<td>";
-    sql_query( "SELECT id,alias,enabled FROM cyrup_aliases WHERE domain_id=${domain_id} AND account_id=".$account_id );
-    while ( $row = sql_fetch_array() ) {
+    $aliases = get_aliases_list($account_id);
+    foreach ( $aliases as $row ) {
       print "<a href='?admin&m=aliasform&id=${row['id']}&account_id=${account_id}'>&nbsp;".htmlspecialchars($row['alias'])."</a> ";
       print ($row['enabled'] ? "(active)" : "(not active)")."<br>\n";
     }

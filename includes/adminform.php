@@ -118,11 +118,8 @@
     print "<a href='?admin&m=domains'>all domains</a>";
   } else {
     $result = sql_query( "SELECT id,domain FROM cyrup_domains ORDER BY domain" );
-    $i = 0;
     while ( $row_dom = sql_fetch_array($result) ) {
-      $i++;
-      print "<input type=hidden name='ids[".$i."]' value='".$row_dom['id']."'>\n";
-      print "<input type=checkbox name='chks[".$i."]' ";
+      print "<input type=checkbox name='ids[${row_dom['id']}]' value='${row_dom['id']}'";
       if ( $owner = get_domain_owner($row_dom['id']) ) {
         print (isset($admin_id) && $owner == $admin_id ? 'checked' : "disabled"); 
       }

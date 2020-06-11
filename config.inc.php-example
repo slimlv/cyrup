@@ -56,8 +56,12 @@
     define( 'MIN_PASSWORD_LENGTH', 4 );
     // Default user quota in megabytes
     define( 'DEFAULT_QUOTA', 50 );
+    define( 'MAX_QUOTA', 1000000000);
     // Allow to disable user's quota 
     define( 'ALLOW_NO_QUOTA', 1 );
+
+    // Maximum lenght of email address
+    define( 'MAX_ACCOUNT_LENGTH', 100 );
 
     // Report vacation status in list of accounts (may be slow)
     define( 'SHOW_VACATION_LIST', 0 );

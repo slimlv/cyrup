@@ -1,9 +1,11 @@
 /*
- * $RCSfile: CHANGELOG,v $ $Revision: 1.17 $
- * $Author: slim_lv $ $Date: 2016/11/01 14:16:45 $
  * This file is part of CYRUP project
  * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@inbox.lv)
  */
+
+20200611 <slim@inbox.lv>:
+  new: count emails as alias
+  cleanup: chks removed in favor of ids
 
 20191023 <slim_lv@users.sourceforge.net>
   new: mysql pdo driver

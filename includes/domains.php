@@ -58,12 +58,12 @@
   while ( $row = sql_fetch_array( $domains_res ) ) {
     $domain_row = get_domain_info($row['id']);
     $i++;
-    print "<td><input type=checkbox name='chks[${i}]'>\n";
+    print "<td><input type=checkbox ";
     if ( $_SESSION['USER'] == ADMIN_USER ) {
-      print "<input type=hidden name='ids[${i}]' value=${row['id']}></td>\n";
+      print "name='ids[${row['id']}]' value=${row['id']}></td>\n";
       print "<td>&nbsp;<a href='?admin&m=domainform&id=${row['id']}'>".htmlspecialchars($domain_row['domain'])."</a>";
     } else {
-      print "</td>\n<td>&nbsp;<a href='#'>".htmlspecialchars($domain_row['domain'])."</a>";
+      print "></td>\n<td>&nbsp;<a href='#'>".htmlspecialchars($domain_row['domain'])."</a>";
     }
     print "</td>\n<td align='center'>".($domain_row['enabled'] ? 'Y' : 'N')."</td>\n";
     print "<td align=center>&nbsp;${domain_row['accounts_cur']}/${domain_row['accounts_max']}</td>\n";

@@ -41,8 +41,7 @@
         $i = 0;
         while ( $row = sql_fetch_array() ) {
             $i++;
-            print "<td width=1><input type=checkbox name='chks[".$i."]'>";
-            print "<input type=hidden name='ids[".$i."]' value='".$row['id']."'></td>\n";
+            print "<td width=1><input type=checkbox name='ids[{$row['id']}]' value='{$row['id']}'></td>\n";
             print "<td>&nbsp;<a href=?admin&m=aliasform&id=".$row['id'].">";
             print htmlspecialchars($row['alias'])."</a></td>\n";
             print "<td align=center>&nbsp;".( $row['enabled'] == 1 ? "Y" : "N")."</td>\n";

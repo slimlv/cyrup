@@ -58,23 +58,17 @@
     print "<tr class=highlight><td colspan=10 align=center><a href='?admin&m=accountform' class=button>[ Add new ]</a></td></tr>\n";
     dotline( 10 );
 
-    # FIXME - subselect
-    $query = "SELECT acc.*,count(ali.id) as aliases_cur FROM cyrup_accounts acc
-                LEFT JOIN cyrup_aliases ali ON acc.id=ali.account_id
-                WHERE acc.domain_id=${domain_id} ".filter2sql('acc.account').' 
-                GROUP BY acc.id, acc.account, acc.password, acc.domain_id, acc.quota, acc.first_name, acc.surname, acc.other_email, acc.info, acc.enabled, acc.phone
-                ORDER BY '.$order_by;
+    $query = "SELECT * FROM cyrup_accounts WHERE domain_id=${domain_id} ".filter2sql('account').' ORDER BY '.$order_by;
     
     sql_query( $query );
-    $i = 0;
-    while ( $row = sql_fetch_array() ) {
+
+    $rows = sql_fetch_all();
+    foreach ($rows as $row) {
       if ( $row["account"] == CYRUS_USER ) continue;
-      $i++;
-      print "<td width=1><input type=checkbox name='chks[".$i."]'>";
-      print "<input type=hidden name='ids[".$i."]' value='${row['id']}'></td>\n";
+      print "<td width=1><input type=checkbox name='ids[${row['id']}]' value='${row['id']}'></td>\n";
       print "<td>&nbsp;<a href='?admin&m=accountform&id=${row['id']}'>".htmlspecialchars($row['account'])."</a></td>\n";
       print "<td align=center>&nbsp;".( $row['enabled'] == 1 ? "Y" : "N")."</td>\n";
-      print "<td align=center>&nbsp;${row['aliases_cur']}</td>\n";
+      print "<td align=center>&nbsp;".count(get_aliases_list($row['id']))."</td>\n";
       if ( SIEVE) {
         $vacation = getVacation($row['account']);
         print '<td align=center><a href="?admin&m=vacationform&account_id='.$row['id'].'">'.( empty($vacation[0]) ? '-' : 'V')."</a></td>\n";
@@ -91,7 +85,7 @@
       dotline( 10 );
     }
     print "</table>\n";
-    if ( $i >= 1 ) {
+    if ( $rows ) {
       print "<br><br>\n";
       delete_selected_box(); 
     }
