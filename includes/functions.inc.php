@@ -5,31 +5,23 @@
   if ( !defined('DEFAULT_DOMAIN') ) define('DEFAULT_DOMAIN','');
   if ( !defined('SHOW_VACATION_LIST') ) define('SHOW_VACATION_LIST', 0);
 
-    function chks2sql( $sql_field = "id" ) {
-        $i = 0;
-        $at_least_one = 0;
-        $sel = "";
-        while ( $i <= sizeof($_POST['ids']) ) {
-            if ( isset( $_POST['chks'][$i] ) AND ( $_POST['chks'][$i] == "on" ) ) {
-                if ( $at_least_one ) $sel .= " OR ";
-                $sel .= "$sql_field = ".intval($_POST['ids'][$i]);
-                $at_least_one++;
-            }
-            $i++;
-        }
-        return $sel;
+  function chks2sql( $sql_field = "id" ) {
+    $sel = "";
+
+    if (!empty($_POST['ids']) AND is_array($_POST['ids'])) {
+      $sel = "{$sql_field} IN (".implode(',',array_map('intval',$_POST['ids'])).")";
     }
 
-    function chks2array() {
-        $ids = [];
-        if ( empty($_POST['ids']) || !is_array($_POST['ids']) ) return $ids;
-        $i = 0;
-        while ( $i <= count( $_POST['ids'] ) ) {
-            if ( isset( $_POST['chks'][$i] ) && $_POST['chks'][$i] == "on" ) $ids[] = intval($_POST['ids'][$i]);
-            $i++;
-        }
-        return $ids;
+    return $sel;
+  }
+
+  function chks2array() {
+    $ids = [];
+    if ( !empty($_POST['ids']) AND is_array($_POST['ids']) ) {
+      $ids = array_map('intval',$_POST['ids']);
     }
+    return $ids;
+  }
 
   function rights2sql( $sql_field = "id" ) {
     DEBUG( D_FUNCTION, "rights2sql($sql_field)" );
@@ -159,7 +151,7 @@
 
     $valid = [ 
       "domains_order_by"  => [ 'domain','accounts_max','aliases_max','quota','account_suffix','aliased_to','enabled','info'],
-      "accounts_order_by" => [ 'account','quota','first_name','enabled','aliases_cur','surname','phone','info','vacation'],
+      "accounts_order_by" => [ 'account','quota','first_name','enabled','surname','phone','info','vacation'],
       "aliases_order_by"  => [ 'alias','enabled','account_id','aliased_to'],
       "maillists_order_by"=> [ 'alias','enabled','aliased_to'],
       "admins_order_by"   => [ 'username','rights','info']
@@ -195,6 +187,32 @@
         print "<a href='?admin&m=maillistform&id=${row['id']}'>&nbsp;${row['alias']}</a> ".( $row['enabled'] ? '(active)' : '(inactive)' )."<br>\n";
       }
     }
+  }
+
+  function get_aliases_list( $account_id ) {
+    DEBUG( D_FUNCTION, "print_alias_list($account_id)" );
+
+    $aliases = [];
+
+    $account_id = intval($account_id);
+    $domain_id = get_domain_id();
+    if ( !$account_id ) return $aliases;
+
+    sql_query( "SELECT account FROM cyrup_accounts WHERE domain_id=${domain_id} AND id=".$account_id);
+    if ( 1 != sql_num_rows() ) return $aliases;
+    $account = sql_fetch_variable();
+
+    sql_query( "SELECT id, alias, enabled, aliased_to FROM cyrup_aliases WHERE domain_id=${domain_id} AND account_id = 0 AND aliased_to LIKE ".sql_escape("%${account}%")." ORDER BY alias" );
+    while ( $row = sql_fetch_array() ) {
+      $aliased_to = explode( ",", $row['aliased_to'] );
+      if ( in_array($account,$aliased_to) ) $aliases[] = $row;
+    }
+
+    sql_query( "SELECT id, alias, enabled FROM cyrup_aliases WHERE domain_id=${domain_id} AND account_id=".$account_id );
+    if ( !sql_num_rows() ) return $aliases;
+    while ( $row = sql_fetch_array() ) $aliases[] = $row;
+
+    return $aliases;
   }
 
   function remove_from_maillist( $alias_id ) {
