@@ -81,7 +81,7 @@
     define( 'IMAGES_URL', BASE_URL.'/img' );
 
     // Version. The bigger the better
-    define( 'VERSION', ' CyrUp v2.3' );
+    define( 'VERSION', ' CyrUp v2.5' );
     define( 'TITLE', VERSION.': ' );
 
     # Debug level & verbose messages
