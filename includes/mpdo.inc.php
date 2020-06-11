@@ -103,6 +103,16 @@
         return $stmt->fetch();
     }
 
+    function sql_fetch_all() {
+        global $dbconn;
+        global $sql_last_result;
+        DEBUG( D_FUNCTION, "sql_fetch_all(...)" );
+
+        $stmt = func_num_args() ? func_get_arg(0) : $sql_last_result;
+
+        return $stmt->fetchAll();
+    }
+
     function sql_field_names() {
         DEBUG( D_FUNCTION, "sql_field_names()" );
         $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];

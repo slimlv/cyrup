@@ -78,6 +78,12 @@
         return pg_fetch_row( $result ); 
     }
 
+    function sql_fetch_all() {
+        DEBUG( D_FUNCTION, "sql_fetch_all()" );
+        $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
+        return pg_fetch_all( $result );
+    }
+
     function sql_free_result() {
         DEBUG( D_FUNCTION, "sql_free_result()" );
         $result = func_num_args() ? func_get_arg(0) : $GLOBALS['sql_last_result'];
