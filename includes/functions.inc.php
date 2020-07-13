@@ -27,7 +27,7 @@
     DEBUG( D_FUNCTION, "rights2sql($sql_field)" );
     $out = ' TRUE '; 
     if ( $_SESSION['USER'] != ADMIN_USER && !empty(trim($_SESSION['RIGHTS'])) ) {
-      $out =  "${sql_field} IN (${_SESSION['RIGHTS']} "; 
+      $out =  "${sql_field} IN (${_SESSION['RIGHTS']}) ";
     }
     return $out;
   }
