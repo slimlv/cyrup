@@ -10,8 +10,8 @@
         global $dbconn;
         DEBUG( D_SQL_ERROR, $message );
         print "<font color=red><b>FATAL: </b></font><pre>";
-        print_r(PDO::errorInfo);
-        exit();
+        print_r($dbconn->errorInfo());
+        die();
     }
 
     function sql_escape($str) {
