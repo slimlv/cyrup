@@ -63,31 +63,33 @@
     sql_query( $query );
 
     $rows = sql_fetch_all();
-    foreach ($rows as $row) {
-      if ( $row["account"] == CYRUS_USER ) continue;
-      print "<td width=1><input type=checkbox name='ids[${row['id']}]' value='${row['id']}'></td>\n";
-      print "<td>&nbsp;<a href='?admin&m=accountform&id=${row['id']}'>".htmlspecialchars($row['account'])."</a></td>\n";
-      print "<td align=center>&nbsp;".( $row['enabled'] == 1 ? "Y" : "N")."</td>\n";
-      print "<td align=center>&nbsp;".count(get_aliases_list($row['id']))."</td>\n";
-      if ( SIEVE) {
-        $vacation = getVacation($row['account']);
-        print '<td align=center><a href="?admin&m=vacationform&account_id='.$row['id'].'">'.( empty($vacation[0]) ? '-' : 'V')."</a></td>\n";
-      }
-      $quota = cimap_getquota( $row['account'] );
-      print "<td align=center>&nbsp;";
-      print is_array($quota) ? kb2mb( $quota['used'] )."/".kb2mb( $quota['max'] )."&nbsp;(".percents( $quota['used'], $quota['max'] ).") " : "no-quota";
-      print "</td>\n";
-      print "<td align=center>&nbsp;".htmlspecialchars($row['first_name'])."</td>\n";
-      print "<td align=center>&nbsp;".htmlspecialchars($row['surname'])."</td>\n";
-      print "<td align=center>&nbsp;".htmlspecialchars($row['phone'])."</td>\n";
-      print "<td align=right>&nbsp;".htmlspecialchars($row['info'])."</td>\n";
-      print "</tr>\n";
-      dotline( 10 );
-    }
-    print "</table>\n";
     if ( $rows ) {
+      foreach ($rows as $row) {
+        if ( $row["account"] == CYRUS_USER ) continue;
+        print "<td width=1><input type=checkbox name='ids[${row['id']}]' value='${row['id']}'></td>\n";
+        print "<td>&nbsp;<a href='?admin&m=accountform&id=${row['id']}'>".htmlspecialchars($row['account'])."</a></td>\n";
+        print "<td align=center>&nbsp;".( $row['enabled'] == 1 ? "Y" : "N")."</td>\n";
+        print "<td align=center>&nbsp;".count(get_aliases_list($row['id']))."</td>\n";
+        if ( SIEVE) {
+          $vacation = getVacation($row['account']);
+          print '<td align=center><a href="?admin&m=vacationform&account_id='.$row['id'].'">'.( empty($vacation[0]) ? '-' : 'V')."</a></td>\n";
+        }
+        $quota = cimap_getquota( $row['account'] );
+        print "<td align=center>&nbsp;";
+        print is_array($quota) ? kb2mb( $quota['used'] )."/".kb2mb( $quota['max'] )."&nbsp;(".percents( $quota['used'], $quota['max'] ).") " : "no-quota";
+        print "</td>\n";
+        print "<td align=center>&nbsp;".htmlspecialchars($row['first_name'])."</td>\n";
+        print "<td align=center>&nbsp;".htmlspecialchars($row['surname'])."</td>\n";
+        print "<td align=center>&nbsp;".htmlspecialchars($row['phone'])."</td>\n";
+        print "<td align=right>&nbsp;".htmlspecialchars($row['info'])."</td>\n";
+        print "</tr>\n";
+        dotline( 10 );
+      }
+      print "</table>\n";
       print "<br><br>\n";
       delete_selected_box(); 
+    } else {
+      print "</table>\n";
     }
     print "</form>\n";
   }
