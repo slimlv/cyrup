@@ -293,7 +293,7 @@
     fwrite( $fh, "# Basic system aliases -- these MUST be present.\n" );
 
     while ( $row = sql_fetch_array($result) ) {
-      fwrite( $fh, '/(postmaster|abuse)@'.str_replace('.','\.',$row[0]).'$/  root'."\n" );
+      fwrite( $fh, '/(postmaster|abuse)@'.str_replace('.','\.',$row['domain']).'$/  root'."\n" );
     }
     fclose($fh);
   }
