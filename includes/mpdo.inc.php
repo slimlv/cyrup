@@ -56,7 +56,8 @@
 
         $stmt = func_num_args() ? func_get_arg(0) : $sql_last_result;
 
-        return count($stmt->fetchAll());
+        return $stmt->rowCount();
+//        return count($stmt->fetchAll());
     }
 
     function sql_affected_rows() {
