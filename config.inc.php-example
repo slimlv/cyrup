@@ -4,7 +4,7 @@
     define( 'ADMIN_USER', 'admin' );
 
     // Where the root of this project is visible from web
-    define( 'BASE_URL', 'http'.( isset($_SERVER['HTTPS']) ? 's' : '' ).'://'.$_SERVER['HTTP_HOST'] .dirname($_SERVER['SCRIPT_NAME']) );     
+    define( 'BASE_URL', 'http'.( isset($_SERVER['HTTPS']) ? 's' : '' ).'://'.$_SERVER['HTTP_HOST'].strtr(dirname($_SERVER['SCRIPT_NAME']).'/',['//' => '/']) );
 
     define( 'INCLUDE_DIR', 'includes' );
     define( 'AUTHSIGN', "<a href='http://cyrup.sf.net' target='_blank'>cyrup.sf.net</a>" );
@@ -77,8 +77,8 @@
     // Folders to be created for new accounts (but not subscribed)
     const IMAP_FOLDERS = [ 'SPAM' ];  
 
-    define( 'JS_URL', BASE_URL.'/js' );
-    define( 'IMAGES_URL', BASE_URL.'/img' );
+    define( 'JS_URL', BASE_URL.'js' );
+    define( 'IMAGES_URL', BASE_URL.'img' );
 
     // Version. The bigger the better
     define( 'VERSION', ' CyrUp v2.5' );
