@@ -1,6 +1,6 @@
 <?php
 
-  defined('INCLUDE_DIR') || exit('Not for direct run'); 
+  defined('INCLUDE_DIR') || exit('Not for direct run');
   if ( empty($_SESSION['domain_id'])) {
     header( "Location: ".BASE_URL."?admin" );
     exit;
@@ -21,7 +21,7 @@
       sql_query( "SELECT * FROM cyrup_accounts WHERE id=${_POST['id']} AND domain_id=".$domain_id );
       if ($account_row = sql_fetch_array() ) {
         $account_id = $account_row['id'];
-      } else { 
+      } else {
         $errors[] = "This account absent";
       }
     }
@@ -31,7 +31,7 @@
     }
     $enabled    = isset($_POST['enabled']) ? 1 : 0;
     $quota      = empty($_POST['quota_mb']) ? 0 : intval($_POST['quota_mb'] << 10);
-    $quota_inc  = isset($account_id) ? $quota - $account_row['quota'] : $quota;
+    $quota_inc  = isset($account_id) && !empty($account_row['quota']) ? $quota - $account_row['quota'] : $quota;
     $regex =  CYRUS_DELIMITER == '/' ? '\w.-' : '\w-';
     $account = strtolower(trim(preg_replace("/[^${regex}]/",'',$_POST['account'])));
     $imap_account = get_mailbox( $account, $domain_row );
@@ -99,14 +99,14 @@
                          UNION
                       SELECT 1 from cyrup_maillists WHERE domain_id=${domain_id} AND alias=".sql_escape($alias));
           if ( !sql_num_rows() ) {
-            sql_query ( "INSERT INTO cyrup_aliases (account_id,domain_id,enabled,alias,aliased_to) 
+            sql_query ( "INSERT INTO cyrup_aliases (account_id,domain_id,enabled,alias,aliased_to)
                              VALUES (${account_id},${domain_id},1, ".sql_escape($alias).",".sql_escape($imap_account).")" );
           }
         }
       }
+      header( "Location: ".BASE_URL."?admin&m=accounts" );
+      exit;
     }
-    header( "Location: ".BASE_URL."?admin&m=accounts" );
-    exit;
   }
 
   print_header(VERSION.": Account form");
@@ -130,9 +130,9 @@
     $account_row['account'] = get_mailbox_local_part( $domain_row, $account_row['account'] );
     $account_row['quota'] >>= 10;
   } else {
+    $account_row['account'] = $account;
     $account_row['quota'] = empty($_POST['quota_mb']) ? DEFAULT_QUOTA : intval($_POST['quota_mb']);
     $account_row['enabled'] = isset($enabled) ? $enabled : 1;
-    $account_row['account'] = '';
     $account_row['password'] = '';
     foreach (['first_name','surname','phone','other_email','info'] as $key) {
       $account_row[$key] = empty($$key) ? '' : $$key;
@@ -142,7 +142,7 @@
   print "<table align=center border=0 cellpadding=0 cellspacing=0>\n";
   dotline( 2 );
   print "<tr class=highlight>\n<td colspan=2 align=center>";
-  print $account_id ? "<b>Edit account</b>" : "<b>Add account</b>"; 
+  print $account_id ? "<b>Edit account</b>" : "<b>Add account</b>";
   print "</td></tr>\n";
   dotline( 2 );
   print "<tr>\n<td>&nbsp; Active? &nbsp;</td>\n<td>\n";
@@ -153,8 +153,8 @@
   print "<td>&nbsp;".htmlspecialchars($domain_row['domain'])."</td>\n</tr>\n";
   dotline( 2 );
   print "<tr>\n<td>&nbsp; Account name &nbsp;</td>\n<td>\n";
-  print "<input type=hidden name=old_account value='".htmlspecialchars($account_row['account'])."'>\n";
-  print "<input type=text name=account size=15";
+  print '<input type="hidden" name="old_account" value="'.htmlspecialchars($account_row['account']).'"'.">\n";
+  print '<input type="text" name="account" size=15 value="'.htmlspecialchars($account_row['account']).'"';
   if ( $account_id ) print " disabled onBlur='javascript:checkInput()' value='".htmlspecialchars($account_row['account'])."'";
   print ">".htmlspecialchars($mailbox_suffix)."<br>" ;
   if ( $account_id) print "<input type=button value='Rename' onClick='javascript:enableRename();'>";
@@ -170,7 +170,7 @@
     print ( $account_id ? "(Leave empty if no change) " : "" );
   }
   print "</td>\n</tr>\n";
-  dotline( 2 ); 
+  dotline( 2 );
   html_input_text( "quota_mb", "Quota", $account_row['quota'], "Mb", 5 );
   dotline( 2 );
   html_input_text( "first_name", "First name", $account_row['first_name'] );
@@ -199,7 +199,7 @@
     sql_query( "SELECT id FROM cyrup_aliases WHERE domain_id=${domain_id} AND account_id=".$account_id );
     while ( $row = sql_fetch_array() )
       print_maillist_list( $row['id'] );
-      print "\t</td>\n</tr>\n"; 
+      print "\t</td>\n</tr>\n";
       if ( SIEVE ) {
         dotline( 2 );
         print "<tr>\n\t<td>&nbsp; Autoreply &nbsp;</td>\n\t<td>";
@@ -214,10 +214,10 @@
   dotline( 2 );
   if ( $errors ) {
     print "<tr class=highlight><td colspan=2 align=center>";
-    print_errors( $errors ); 
+    print_errors( $errors );
     print "</tr>";
-    dotline( 2 ); 
-  } 
+    dotline( 2 );
+  }
   print "<tr>\n<td>&nbsp;</td>\n<td>";
   print "<input type='submit' value='".($account_id ? 'Update' : 'Add new')."'>";
   print "</td>\n</tr>\n</table>\n</form><br />\n";
