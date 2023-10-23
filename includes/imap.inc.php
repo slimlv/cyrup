@@ -1,10 +1,8 @@
 <?php
 /*
- * $RCSfile: imap.inc.php,v $ $Revision: 1.14 $
- * $Author: slim_lv $ $Date: 2016/12/28 17:43:41 $ 
  * This file is part of CYRUP project
  * by Yuri Pimenov (up@msh.lv) & Deniss Gaplevsky (slim@msh.lv)
- */
+*/
 
     if ( !defined("INCLUDE_DIR") ) exit("Not for direct run");
 
@@ -59,7 +57,7 @@
             $line = fgets( $_imap_stream, 2048 );
             if ( ! $line )
                 cimap_die( "cimap_command(): fgets() answer read error" );
-            if ( $line{0} == "." ) {
+            if ( $line[0] == "." ) {
                 $rval = false;
                 if ( substr( $line, 2, 2 ) == "OK" )
                     $rval = true;
@@ -277,5 +275,3 @@
     }
 
     cimap_open();
-
-?>
