@@ -5,7 +5,7 @@
   // Change admins passwords
   if ( !empty($_POST['old_password']) && !empty($_POST['new_password']) && !empty($_POST['new_password_retype']) ) {
     $account = $_SESSION['USER'];
-    sql_query( "SELECT id FROM cyrup_admins WHERE username=".sql_escape($account)." AND password=" .get_sql_crypt($_POST['old_password']) ) );
+    sql_query( "SELECT id FROM cyrup_admins WHERE username=".sql_escape($account)." AND password=" .get_sql_crypt($_POST['old_password']) );
     $row = sql_fetch_array(); 
     if ( !$row || CYRUS_USER == $account ) $errors[] = "Wrong login name or password";
     if ( $_POST['new_password'] != $_POST['new_password_retype'] ) $errors[] = "New password and retyped new password do not match";
